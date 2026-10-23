@@ -255,6 +255,14 @@
         console.warn('Pro token invalid or hardware mismatch. Reverting to trial.');
         state.isPro = false;
         state.token = null;
+        state.proKey = null;
+        saveFreemiumState(state);
+        renderFreemiumUI();
+      } else {
+        state.buyer = data.buyer;
+        state.tier = data.tier;
+        state.daysRemaining = data.daysRemaining;
+        state.expiresAt = data.expiresAt;
         saveFreemiumState(state);
         renderFreemiumUI();
       }
@@ -291,12 +299,15 @@
 
     if (state.isPro) {
       creditBar.className = 'freemium-credit-bar freemium-pro-active';
+      const validityBadge = state.daysRemaining === 'Lifetime' 
+        ? '👑 Lifetime Pass' 
+        : (state.daysRemaining ? `⏳ ${state.daysRemaining}d Left` : '👑 Lifetime Pass');
       creditBar.innerHTML = `
         <div class="credit-pill">
           <span class="credit-icon">👑</span>
           <strong style="color: #10b981;">PRO ACTIVE</strong>
           <span class="credit-sep">•</span>
-          <span style="color: #a1a1aa; font-size: 11px;">${state.buyer || 'Device Locked'}</span>
+          <span style="color: #38bdf8; font-size: 11px; font-weight: 700;">${validityBadge}</span>
         </div>
         <span style="font-size: 10px; color: #10b981; font-weight: 700;">✓ Verified</span>
       `;

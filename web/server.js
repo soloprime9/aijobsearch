@@ -1460,6 +1460,13 @@ function verifyLicenseSession(req) {
       return { isPro: false, reason: 'License invalid or revoked' };
     }
 
+    // Automatic Expiration / Validity Verification
+    if (lic.expiresAt && new Date(lic.expiresAt).getTime() < Date.now()) {
+      lic.status = 'expired';
+      saveVaultSafely(vault);
+      return { isPro: false, reason: 'License validity period expired' };
+    }
+
     const expectedToken = crypto.createHmac('sha256', vault.secretSalt).update(`${licenseKey}:${deviceId}`).digest('hex');
     if (token !== expectedToken) {
       return { isPro: false, reason: 'Signature mismatch' };
@@ -2250,6 +2257,8 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
             buyer: lic.buyer,
             maxDevices: 1,
             activeDevicesCount: 1,
+            daysRemaining: 'Lifetime',
+            expiresAt: null,
             isUtrProvisioned: true
           }));
         }
@@ -2312,6 +2321,31 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
           }));
         }
 
+        // Automatic Expiration / Validity Verification
+        if (license.expiresAt && new Date(license.expiresAt).getTime() < Date.now()) {
+          license.status = 'expired';
+          saveVaultSafely(vault);
+          recordFailedAttempt(req);
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ 
+            success: false, 
+            error: 'This license validity period has expired. Please renew your pass.' 
+          }));
+        }
+
+        // Auto-provision 30-day validity if tier is monthly and expiresAt is missing
+        if (!license.expiresAt && (license.tier === 'pro_monthly' || license.tier === 'global_monthly')) {
+          license.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+          saveVaultSafely(vault);
+        } else if (!license.expiresAt && license.tier === 'global_season') {
+          license.expiresAt = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
+          saveVaultSafely(vault);
+        }
+
+        const daysRemaining = license.expiresAt 
+          ? Math.max(0, Math.ceil((new Date(license.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+          : 'Lifetime';
+
         // Anti-Reselling & Hardware Device Lock Enforcement
         license.activeDevices = license.activeDevices || [];
         const isDeviceRegistered = license.activeDevices.some(d => d.deviceId === deviceId);
@@ -2346,7 +2380,9 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
           buyer: license.buyer,
           email: license.email,
           maxDevices: license.maxDevices || 1,
-          activeDevicesCount: license.activeDevices.length
+          activeDevicesCount: license.activeDevices.length,
+          daysRemaining,
+          expiresAt: license.expiresAt || null
         }));
       } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -2371,11 +2407,29 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
         if (token && token === expectedToken) {
           const lic = vault.licenses[trimmedKey];
           if (lic && lic.status === 'active') {
+            // Automatic Expiration Verification
+            if (lic.expiresAt && new Date(lic.expiresAt).getTime() < Date.now()) {
+              lic.status = 'expired';
+              saveVaultSafely(vault);
+              res.writeHead(403, { 'Content-Type': 'application/json' });
+              return res.end(JSON.stringify({ valid: false, error: 'License validity period has expired.' }));
+            }
+
             const isMasterAdmin = (lic.tier === 'founder_unlimited' || lic.maxDevices >= 9999);
             const isDeviceRegistered = isMasterAdmin || (lic.activeDevices || []).some(d => d.deviceId === deviceId);
             if (isDeviceRegistered) {
+              const daysRemaining = lic.expiresAt 
+                ? Math.max(0, Math.ceil((new Date(lic.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+                : 'Lifetime';
               res.writeHead(200, { 'Content-Type': 'application/json' });
-              return res.end(JSON.stringify({ valid: true, buyer: lic.buyer, tier: lic.tier, isMasterAdmin }));
+              return res.end(JSON.stringify({ 
+                valid: true, 
+                buyer: lic.buyer, 
+                tier: lic.tier, 
+                daysRemaining,
+                expiresAt: lic.expiresAt || null,
+                isMasterAdmin 
+              }));
             }
           }
         }
@@ -2414,6 +2468,13 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
         const p2 = crypto.randomBytes(3).toString('hex').toUpperCase();
         const generatedKey = `PRO-${p1}-${p2}`;
 
+        let expiresAt = null;
+        if (tier === 'pro_monthly' || tier === 'global_monthly') {
+          expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        } else if (tier === 'global_season') {
+          expiresAt = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
+        }
+
         vault.licenses[generatedKey] = {
           buyer: cleanBuyerName,
           email: cleanBuyerEmail,
@@ -2421,13 +2482,14 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
           maxDevices: 1,
           activeDevices: [],
           createdAt: new Date().toISOString(),
+          expiresAt,
           status: 'active'
         };
 
         saveVaultSafely(vault);
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ success: true, licenseKey: generatedKey, buyer: cleanBuyerName, tier }));
+        return res.end(JSON.stringify({ success: true, licenseKey: generatedKey, buyer: cleanBuyerName, tier, expiresAt }));
       } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ error: e.message }));
@@ -2471,18 +2533,25 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
           totalDevicesLocked += (data.activeDevices || []).length;
         }
 
-        const safeLicenses = Object.entries(vault.licenses).map(([key, data]) => ({
-          key,
-          buyer: data.buyer,
-          email: data.email,
-          tier: data.tier,
-          status: data.status,
-          maxDevices: data.maxDevices || 1,
-          activeDevicesCount: (data.activeDevices || []).length,
-          activeDevices: data.activeDevices || [],
-          createdAt: data.createdAt,
-          utrNumber: data.utrNumber || null
-        }));
+        const safeLicenses = Object.entries(vault.licenses).map(([key, data]) => {
+          const daysRemaining = data.expiresAt 
+            ? Math.max(0, Math.ceil((new Date(data.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+            : 'Lifetime';
+          return {
+            key,
+            buyer: data.buyer,
+            email: data.email,
+            tier: data.tier,
+            status: data.status,
+            maxDevices: data.maxDevices || 1,
+            activeDevicesCount: (data.activeDevices || []).length,
+            activeDevices: data.activeDevices || [],
+            createdAt: data.createdAt,
+            expiresAt: data.expiresAt || null,
+            daysRemaining,
+            utrNumber: data.utrNumber || null
+          };
+        });
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ 

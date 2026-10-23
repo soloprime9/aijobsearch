@@ -231,11 +231,14 @@
     if (state.isPro) {
       pill.style.background = 'rgba(16, 185, 129, 0.15)';
       pill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+      const validityBadge = state.daysRemaining === 'Lifetime' 
+        ? '👑 Lifetime Pass' 
+        : (state.daysRemaining ? `⏳ ${state.daysRemaining}d Left` : '👑 Lifetime Pass');
       pill.innerHTML = `
-        <span style="color: #10b981; font-size: 13px;">👑</span>
+        <span style="color: #10b981; font-size: 13px;">✓</span>
         <strong style="color: #10b981; font-size: 11.5px;">PRO ACTIVE</strong>
         <span style="color: var(--text-muted); font-size: 10px;">•</span>
-        <span style="color: #a1a1aa; font-size: 11px;">${state.buyer || 'Hardware Locked'}</span>
+        <span style="color: #38bdf8; font-size: 11px; font-weight: 700;">${validityBadge}</span>
       `;
       if (btnUpgrade) btnUpgrade.style.display = 'none';
     } else {
@@ -265,9 +268,18 @@
       });
       const data = await res.json();
       if (!res.ok || !data.valid) {
-        console.warn('Pro token invalid or hardware mismatch. Reverting to trial.');
+        console.warn('Pro token invalid, hardware mismatch, or license expired.');
         state.isPro = false;
         state.token = null;
+        state.proKey = null;
+        saveWebFreemium(state);
+        renderWebFreemiumUI();
+        showToast('⚠️ Pro subscription expired or revoked. Reverted to free preview.', true);
+      } else {
+        state.buyer = data.buyer;
+        state.tier = data.tier;
+        state.daysRemaining = data.daysRemaining;
+        state.expiresAt = data.expiresAt;
         saveWebFreemium(state);
         renderWebFreemiumUI();
       }
@@ -462,6 +474,9 @@
         state.proKey = data.licenseKey || key;
         state.token = data.token;
         state.buyer = data.buyer;
+        state.tier = data.tier;
+        state.daysRemaining = data.daysRemaining || (data.tier === 'lifetime_pass' ? 'Lifetime' : '30');
+        state.expiresAt = data.expiresAt || null;
         saveWebFreemium(state);
         renderWebFreemiumUI();
 
