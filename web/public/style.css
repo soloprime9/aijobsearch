@@ -2202,3 +2202,106 @@ body {
   width: 100%;
 }
 
+/* ========================================================================= */
+/* Complete Mobile, Tablet & Cross-Device Responsiveness (Zero Scroll Overflow) */
+/* ========================================================================= */
+
+@media (max-width: 900px) {
+  .nav-container {
+    padding: 0 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .nav-links {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .tutorial-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .payment-tabs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .modal-card {
+    width: 96% !important;
+    max-height: 90vh !important;
+    padding: 20px 16px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 0;
+  }
+
+  .app-layout {
+    padding: 0 8px;
+  }
+
+  .navbar {
+    padding: 10px 0;
+  }
+
+  .brand-name {
+    font-size: 14px;
+  }
+
+  .hero-main-title {
+    font-size: 26px !important;
+    line-height: 1.2 !important;
+  }
+
+  .hero-subtitle {
+    font-size: 13px !important;
+  }
+
+  .search-form-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-input-group {
+    width: 100% !important;
+  }
+
+  .btn-search-hero {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .payment-tabs-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .btn-pay-tab {
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+
+  .modal-card {
+    width: 98% !important;
+    padding: 16px 12px !important;
+  }
+
+  .tut-mockup-row {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  footer {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+}
+

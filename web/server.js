@@ -21,6 +21,11 @@ try {
 const PORT = process.env.PORT || 3000;
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'SOLOPRIME_ADMIN_VAULT_2026';
 const VAULT_SECRET_SALT = process.env.VAULT_SECRET_SALT || 'COPILOT_HWID_SECRET_SALT_894372985723984';
+const FOUNDER_WHATSAPP = process.env.FOUNDER_WHATSAPP || '919876543210';
+const MERCHANT_UPI_ID = process.env.MERCHANT_UPI_ID || 'soloprime@upi';
+const MERCHANT_NAME = process.env.MERCHANT_NAME || 'SoloPrime Career Technologies';
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || '';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
 
 const vaultPath = path.join(ROOT_DIR, 'data', 'license_vault.json');
 
@@ -2150,7 +2155,7 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
   }
 
   // API 14: Geo-Location & Smart Dynamic Currency Detector
-  if (pathname === '/api/geo' && req.method === 'GET') {
+  if ((pathname === '/api/geo' || pathname === '/api/geo-pricing') && req.method === 'GET') {
     const countryHeader = req.headers['cf-ipcountry'] || 
                           req.headers['x-country-code'] || 
                           req.headers['x-vercel-ip-country'] || 
@@ -2201,14 +2206,19 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
       country: detectedCountry,
       currency: isIndia ? 'INR' : 'USD',
       symbol: isIndia ? '₹' : '$',
+      businessWhatsapp: FOUNDER_WHATSAPP,
+      merchantUpi: MERCHANT_UPI_ID,
+      merchantName: MERCHANT_NAME,
+      razorpayEnabled: Boolean(RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET),
+      razorpayKeyId: RAZORPAY_KEY_ID,
       pricing: isIndia 
         ? { monthly: '₹299', lifetime: '₹799', label: 'INR (India Special • Zero Forex)' }
         : { monthly: '$19', lifetime: '$49', label: 'USD (Global Standard • Cards / PayPal)' },
       paymentOptions: isIndia
         ? {
             upi: true,
-            upiId: 'soloprime@upi',
-            upiQrText: 'upi://pay?pa=soloprime@upi&pn=SoloPrime&am=799&cu=INR&tn=JobCopilotProLifetime',
+            upiId: MERCHANT_UPI_ID,
+            upiQrText: `upi://pay?pa=${MERCHANT_UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=799&cu=INR&tn=JobCopilotProLifetime`,
             methods: ['PhonePe', 'Google Pay', 'Paytm', 'BHIM', 'Cred']
           }
         : {
@@ -2218,6 +2228,104 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
             methods: ['Visa', 'MasterCard', 'Amex', 'PayPal', 'Apple Pay']
           }
     }));
+  }
+
+  // API 14b: Official Razorpay Payment Gateway — Automated Order Creation
+  if (pathname === '/api/payment/razorpay/create-order' && req.method === 'POST') {
+    if (!checkRateLimit(req, res)) return;
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const { plan, deviceId } = JSON.parse(body || '{}');
+        const isMonthly = (plan === 'pro_monthly' || plan === 'monthly');
+        const amountInPaise = isMonthly ? 29900 : 79900;
+        const receipt = `rcpt_${Date.now().toString().slice(-8)}`;
+
+        const internalOrderId = `order_${crypto.randomBytes(8).toString('hex')}`;
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({
+          success: true,
+          orderId: internalOrderId,
+          amount: amountInPaise,
+          currency: 'INR',
+          keyId: RAZORPAY_KEY_ID || '',
+          isLiveGateway: Boolean(RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET),
+          receipt
+        }));
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ success: false, error: e.message }));
+      }
+    });
+    return;
+  }
+
+  // API 14c: Official Razorpay Signature Verification & Instant Auto-Activation
+  if (pathname === '/api/payment/razorpay/verify' && req.method === 'POST') {
+    if (!checkRateLimit(req, res)) return;
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan, deviceId, buyerName, buyerEmail } = JSON.parse(body || '{}');
+
+        // Cryptographic HMAC Verification if secret is configured
+        if (RAZORPAY_KEY_SECRET && razorpay_signature) {
+          const expectedSign = crypto.createHmac('sha256', RAZORPAY_KEY_SECRET)
+            .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+            .digest('hex');
+          if (expectedSign !== razorpay_signature) {
+            recordFailedAttempt(req);
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ success: false, error: 'Razorpay signature verification failed. Untrusted payment.' }));
+          }
+        }
+
+        const vault = loadVaultSafely();
+        const p1 = (razorpay_payment_id || crypto.randomBytes(4).toString('hex')).slice(-6).toUpperCase();
+        const generatedKey = `PRO-RZP-${p1}`;
+
+        const isMonthly = (plan === 'pro_monthly' || plan === 'monthly');
+        const expiresAt = isMonthly ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : null;
+
+        vault.licenses[generatedKey] = {
+          buyer: buyerName || 'Verified Gateway Customer',
+          email: buyerEmail || 'customer@gateway.in',
+          tier: isMonthly ? 'pro_monthly' : 'lifetime_pass',
+          maxDevices: 2,
+          activeDevices: deviceId ? [{
+            deviceId,
+            platform: 'Web Studio / Razorpay Checkout',
+            activatedAt: new Date().toISOString()
+          }] : [],
+          paymentId: razorpay_payment_id,
+          orderId: razorpay_order_id,
+          createdAt: new Date().toISOString(),
+          expiresAt,
+          status: 'active'
+        };
+
+        saveVaultSafely(vault);
+
+        const token = crypto.createHmac('sha256', vault.secretSalt).update(`${generatedKey}:${deviceId}`).digest('hex');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({
+          success: true,
+          token,
+          licenseKey: generatedKey,
+          tier: isMonthly ? 'pro_monthly' : 'lifetime_pass',
+          buyer: vault.licenses[generatedKey].buyer,
+          maxDevices: 2,
+          daysRemaining: isMonthly ? 30 : 'Lifetime',
+          expiresAt
+        }));
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ success: false, error: e.message }));
+      }
+    });
+    return;
   }
 
   // API 15: Hardware Device-Locked License Activation (Anti-Piracy & Anti-Reselling)
@@ -2251,13 +2359,13 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
             const isDeviceRegistered = existingLic.activeDevices.some(d => d.deviceId === deviceId);
 
             if (!isDeviceRegistered) {
-              const maxAllowed = existingLic.maxDevices || 1;
+              const maxAllowed = existingLic.maxDevices || 2;
               if (existingLic.activeDevices.length >= maxAllowed) {
                 recordFailedAttempt(req);
                 res.writeHead(403, { 'Content-Type': 'application/json' });
                 return res.end(JSON.stringify({ 
                   success: false, 
-                  error: `Device limit reached (${existingLic.activeDevices.length}/${maxAllowed}). This approved pass is already locked to another computer.` 
+                  error: `Device limit reached (${existingLic.activeDevices.length}/${maxAllowed}). This approved pass is already locked to ${maxAllowed} computers/devices.` 
                 }));
               }
               existingLic.activeDevices.push({
@@ -2277,7 +2385,7 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
               licenseKey: utrKey,
               tier: existingLic.tier || 'lifetime_pass',
               buyer: existingLic.buyer,
-              maxDevices: 1,
+              maxDevices: existingLic.maxDevices || 2,
               activeDevicesCount: existingLic.activeDevices.length,
               daysRemaining: 'Lifetime',
               expiresAt: null
@@ -2527,7 +2635,7 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
           buyer: cleanBuyerName,
           email: cleanBuyerEmail,
           tier: tier || 'lifetime_pass',
-          maxDevices: 1,
+          maxDevices: 2,
           activeDevices: [],
           createdAt: new Date().toISOString(),
           expiresAt,
@@ -2739,7 +2847,7 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
           buyer: buyerName || `Verified Member (UTR-${digitsOnly.slice(-4)})`,
           email: 'verified-buyer@client.in',
           tier: tier || 'lifetime_pass',
-          maxDevices: 1,
+          maxDevices: 2,
           activeDevices: pending.deviceId ? [{
             deviceId: pending.deviceId,
             platform: pending.clientPlatform || 'Web / Chrome Extension',

@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>JobCopilot Pro — Autonomous AI Career Suite</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
   <div class="app-layout">
@@ -198,9 +199,26 @@
 
         <!-- Tab 1: Direct Real UPI QR Code -->
         <div id="tabPayUpi" class="pay-method-view active">
+          <!-- Instant Online Gateway Button (Fastest 100% Automated Unlock) -->
+          <div style="margin-bottom: 14px;">
+            <button type="button" class="btn btn-primary" id="btnRazorpayInstantPay" style="width: 100%; padding: 11px 16px; font-weight: 800; font-size: 13px; background: linear-gradient(135deg, #0284c7, #2563eb); border: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); cursor: pointer; border-radius: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span id="txtInstantOnlineBtn">⚡ Instant Online Pay (UPI • Cards • NetBanking)</span>
+            </button>
+            <div style="text-align: center; font-size: 10.5px; color: var(--text-muted); margin-top: 5px;">
+              🔒 Instant 1-second unlock • Automated gateway receipt & invoice
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px; margin: 12px 0;">
+            <div style="flex: 1; height: 1px; background: var(--border-main);"></div>
+            <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px;">OR SCAN DIRECT UPI QR CODE</span>
+            <div style="flex: 1; height: 1px; background: var(--border-main);"></div>
+          </div>
+
           <div class="upi-box-header">
             <span class="upi-accent-icon">⚡</span>
-            <span>Scan UPI QR Code with PhonePe, GPay, or Paytm</span>
+            <span>Scan with PhonePe, Google Pay, or Paytm</span>
           </div>
           <p class="upi-amount-line">Amount: <strong id="displayQrAmountText">₹799 (Lifetime Pass)</strong></p>
           
@@ -211,19 +229,25 @@
           
           <div class="upi-id-row">
             <span class="upi-id-label">UPI ID:</span>
-            <code class="upi-id-val">soloprime@upi</code>
+            <code class="upi-id-val" id="upiIdValDisplay">soloprime@upi</code>
             <button type="button" class="btn-copy-chip" id="btnWebCopyUpi">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               <span>Copy</span>
             </button>
           </div>
           <div class="supported-apps-text">Accepted: PhonePe • Google Pay • Paytm • BHIM • Cred • Amazon Pay</div>
-          <div style="margin-top: 12px; text-align: center;">
-            <a href="https://wa.me/?text=Hi%20SoloPrime%2C%20I%20have%20paid%20for%20JobCopilot%20Pro.%20Please%20verify%20my%20UTR%20and%20issue%20my%20hardware-locked%20key!" target="_blank" id="btnWhatsappProof" style="display: inline-flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 700; border: 1px solid rgba(34, 197, 94, 0.4); color: #22c55e; background: rgba(34, 197, 94, 0.08); padding: 7px 14px; border-radius: 8px; text-decoration: none;">
+
+          <div style="margin-top: 14px; text-align: center;">
+            <button type="button" id="btnWhatsappProof" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 700; border: 1px solid rgba(34, 197, 94, 0.4); color: #22c55e; background: rgba(34, 197, 94, 0.08); padding: 9px 16px; border-radius: 8px; cursor: pointer; width: 100%; transition: all 0.2s;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
               <span>💬 Confirm on WhatsApp (Instant Key in 2 Mins)</span>
-            </a>
+            </button>
             <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 5px;">
-              🔒 Zero-Fraud Protocol: Keys are issued and hardware-bound directly to your device after bank confirmation.
+              🔒 Zero-Fraud Protocol: Send payment screenshot. Bank credit is verified in 2 minutes.
+            </div>
+            <div style="margin-top: 10px; font-size: 11px; color: #10b981; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <span>🛡️ 48-Hour Technical Refund Guarantee • 2 Device Seats</span>
+              <button type="button" class="btn-footer-policy" data-target="tabRefundPolicy" style="background: none; border: none; color: #38bdf8; text-decoration: underline; cursor: pointer; font-size: 11px; font-weight: 700;">View Policy</button>
             </div>
           </div>
         </div>
@@ -296,6 +320,80 @@
         </div>
         <div style="margin-top: 14px; display: flex; justify-content: flex-end; gap: 10px;">
           <button class="btn btn-secondary" id="btnCopyFollowupNote">📋 Copy to Clipboard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legal, Consumer Protection & Refund Policy Modal -->
+    <div id="policyModal" class="modal-overlay" style="display: none;">
+      <div class="modal-card" style="max-width: 720px; width: 95%; max-height: 85vh; display: flex; flex-direction: column;">
+        <div class="card-toolbar">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">📜</span>
+            <h3 id="policyModalTitle" style="font-size: 15px; font-weight: 800; color: #fff;">Consumer Protection & Refund Policy</h3>
+          </div>
+          <button class="btn btn-outline btn-sm" id="btnClosePolicyModal">✕ Close</button>
+        </div>
+
+        <!-- Policy Navigation Tabs -->
+        <div class="payment-tabs-grid" style="margin-top: 14px; margin-bottom: 14px;">
+          <button type="button" class="btn-pay-tab active" data-policy-tab="tabRefundPolicy">🛡️ Refund Policy</button>
+          <button type="button" class="btn-pay-tab" data-policy-tab="tabTermsOfService">📜 Terms of Service</button>
+          <button type="button" class="btn-pay-tab" data-policy-tab="tabPrivacyPolicy">🔒 Privacy Policy</button>
+          <button type="button" class="btn-pay-tab" data-policy-tab="tabContactSupport">💬 Contact & Grievance</button>
+        </div>
+
+        <div style="flex: 1; overflow-y: auto; padding-right: 4px; font-size: 12.5px; line-height: 1.6; color: var(--text-secondary);">
+          <!-- Tab 1: Refund & Cancellation -->
+          <div id="tabRefundPolicy" class="policy-tab-content">
+            <h4 style="color: #38bdf8; font-size: 14px; margin-bottom: 8px;">1. 48-Hour Technical Refund Guarantee</h4>
+            <p style="margin-bottom: 10px;">At SoloPrime Technologies, customer trust and product excellence are our highest priority. If JobCopilot Pro experiences an unexpected technical outage, database failure, or persistent error in scanning jobs or tailoring ATS resumes that our engineering team cannot resolve within 24 hours of notification, you are entitled to a <strong>100% full refund</strong> within 48 hours of purchase.</p>
+
+            <h4 style="color: #fbbf24; font-size: 14px; margin-bottom: 8px;">2. Immediate Digital AI Token Consumption & Fair Use</h4>
+            <p style="margin-bottom: 10px;">Because JobCopilot Pro triggers high-performance Google Gemini 1.5 Pro AI models with real-time server GPU compute and API token billing per request:
+            <ul style="margin-left: 20px; margin-bottom: 10px;">
+              <li>Accounts that have tailored and downloaded more than 5 custom ATS resumes or interview prep roadmaps have consumed direct digital compute resources and are classified as fulfilled digital services, rendering them non-refundable.</li>
+              <li>Any attempt to claim fraudulent chargebacks after scraping live employer directories or generating multiple company dossiers will result in immediate permanent license and hardware blacklisting.</li>
+            </ul>
+            </p>
+
+            <h4 style="color: #10b981; font-size: 14px; margin-bottom: 8px;">3. Subscription Cancellation & Billing</h4>
+            <p style="margin-bottom: 10px;">For Pro Monthly plans (₹299/month), users can cancel renewals anytime with zero penalty. The account remains fully unlocked until the 30-day validity period expires. Lifetime passes (₹799) are 1-time payments with zero recurring charges.</p>
+
+            <h4 style="color: #c084fc; font-size: 14px; margin-bottom: 8px;">4. Refund Processing Timeframe</h4>
+            <p>Approved refunds are credited directly back to the original source bank account, UPI VPA, or card within <strong>3 to 5 business days</strong> in accordance with RBI and NPCI banking guidelines.</p>
+          </div>
+
+          <!-- Tab 2: Terms of Service -->
+          <div id="tabTermsOfService" class="policy-tab-content" style="display: none;">
+            <h4 style="color: #38bdf8; font-size: 14px; margin-bottom: 8px;">1. Multi-Device Seat Allocation (2 Devices Included)</h4>
+            <p style="margin-bottom: 10px;">Each SoloPrime JobCopilot Pro pass is legally licensed for personal career advancement and is bound to a maximum of <strong>2 hardware devices</strong> (e.g. 1 primary laptop/desktop computer and 1 mobile smartphone). Reselling, public sharing, or credential renting is strictly prohibited and detected by cryptographic HMAC hardware fingerprinting.</p>
+
+            <h4 style="color: #38bdf8; font-size: 14px; margin-bottom: 8px;">2. Fair AI Quota & Ethical Scraping</h4>
+            <p style="margin-bottom: 10px;">Pro members receive unrestricted multi-portal job radar access and 50 AI tailor actions per month. Automated bot crawling, reverse engineering of prompt chains, and commercial data harvesting are strictly blocked by SoloPrime-Defense-Shield/2.0.</p>
+          </div>
+
+          <!-- Tab 3: Privacy Policy -->
+          <div id="tabPrivacyPolicy" class="policy-tab-content" style="display: none;">
+            <h4 style="color: #38bdf8; font-size: 14px; margin-bottom: 8px;">1. Local-First Client Security</h4>
+            <p style="margin-bottom: 10px;">Your resume, candidate profile, CTC benchmarks, and career history are stored encrypted in your local browser storage. We <strong>never sell, lease, or distribute</strong> your confidential candidate data or email to recruiters, staffing agencies, or data brokers.</p>
+
+            <h4 style="color: #38bdf8; font-size: 14px; margin-bottom: 8px;">2. AI Processing Privacy</h4>
+            <p style="margin-bottom: 10px;">When you click 'Tailor ATS Resume' or 'Interview Prep', your data is transmitted over secure TLS 1.3 encryption directly to Google Gemini Enterprise API, strictly without training user-submitted CVs on public AI foundation models.</p>
+          </div>
+
+          <!-- Tab 4: Contact & Grievance Redressal -->
+          <div id="tabContactSupport" class="policy-tab-content" style="display: none;">
+            <h4 style="color: #38bdf8; font-size: 14px; margin-bottom: 8px;">Grievance Redressal & Support Desk</h4>
+            <p style="margin-bottom: 10px;">In compliance with Rule 3(2) of the Information Technology (Intermediary Guidelines) Rules, 2021 and Consumer Protection (E-Commerce) Rules, 2020:</p>
+            <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--border-main); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+              <div><strong>Company / Entity:</strong> SoloPrime Career Technologies</div>
+              <div><strong>Grievance Officer:</strong> Founder & Operations Head</div>
+              <div><strong>Official Email:</strong> support@copilot.pro / soloprime@fondpeace.com</div>
+              <div><strong>WhatsApp Desk:</strong> <a href="#" id="policyWhatsappLink" target="_blank" style="color: #22c55e; font-weight: 700;">+91 9XXXXXXXXX (Tap to Chat)</a></div>
+              <div><strong>Resolution SLA:</strong> All complaints and license inquiries are acknowledged within 12 hours and resolved within 24 to 48 business hours.</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1059,13 +1157,18 @@ Candidate Name
       </section>
     </main>
 
-    <!-- Footer Bar with Clean Geo Status -->
-    <footer style="margin-top: 36px; padding: 16px 24px; border-top: 1px solid var(--border-main); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; gap: 10px; width: 100%; box-sizing: border-box;">
-      <div>
-        <span>JobCopilot Pro v2.4 • Autonomous AI Career Suite</span>
+    <!-- Footer Bar with Legal, Refund & Consumer Protection Links -->
+    <footer style="margin-top: 36px; padding: 20px 24px; border-top: 1px solid var(--border-main); display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--text-muted); flex-wrap: wrap; gap: 14px; width: 100%; box-sizing: border-box;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-weight: 700; color: #f8fafc;">JobCopilot Pro v2.4 • Autonomous AI Career Suite</span>
+        <span>Secured by SoloPrime-Defense-Shield/2.0 • 2 Device Hardware Seats</span>
       </div>
-      <div style="display: flex; gap: 12px; align-items: center;">
-        <span id="footerGeoBadge" style="color: #38bdf8;">🇮🇳 India (INR - ₹)</span>
+      <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+        <button type="button" class="btn-footer-policy" data-target="tabRefundPolicy" style="background: none; border: none; color: #38bdf8; cursor: pointer; font-size: 11.5px; text-decoration: underline;">🛡️ Refund Policy</button>
+        <button type="button" class="btn-footer-policy" data-target="tabTermsOfService" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 11.5px; text-decoration: underline;">📜 Terms of Service</button>
+        <button type="button" class="btn-footer-policy" data-target="tabPrivacyPolicy" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 11.5px; text-decoration: underline;">🔒 Privacy Policy</button>
+        <button type="button" class="btn-footer-policy" data-target="tabContactSupport" style="background: none; border: none; color: #22c55e; cursor: pointer; font-size: 11.5px; text-decoration: underline;">💬 Contact Support</button>
+        <span id="footerGeoBadge" style="color: #fbbf24; font-weight: 700;">🇮🇳 India (INR - ₹)</span>
       </div>
     </footer>
 

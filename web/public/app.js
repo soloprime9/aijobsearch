@@ -345,7 +345,7 @@
     });
   }
 
-  // Multi-Payment Method Tabs & Dynamic QR Code Updater
+  // Multi-Payment Method Tabs, Dynamic QR Code & Official Gateway Engine
   const payTabs = document.querySelectorAll('.btn-pay-tab');
   const payMethodViews = document.querySelectorAll('.pay-method-view');
   const planInrLifetime = document.getElementById('planInrLifetime');
@@ -355,19 +355,61 @@
   const upiRealQrImage = document.getElementById('upiRealQrImage');
   const displayQrAmountText = document.getElementById('displayQrAmountText');
 
+  let activeUpiId = 'soloprime@upi';
+  let activeWhatsappNumber = '919876543210';
+  let activeSelectedAmount = 799;
+  let activeSelectedLabel = '₹799 Lifetime Pass';
+  let isRazorpayConfigured = false;
+  let razorpayKeyId = '';
+
   function updateUpiQrCode(amount, label) {
-    if (displayQrAmountText) displayQrAmountText.textContent = `${label} (₹${amount})`;
+    activeSelectedAmount = amount;
+    activeSelectedLabel = label;
+    if (displayQrAmountText) displayQrAmountText.textContent = `${label}`;
     if (upiRealQrImage) {
-      const upiUrl = `upi://pay?pa=soloprime@upi&pn=SoloPrimeCareer&am=${amount}&cu=INR&tn=JobCopilotPro`;
-      upiRealQrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=${encodeURIComponent(upiUrl)}`;
+      const upiUrl = `upi://pay?pa=${activeUpiId}&pn=SoloPrimeCareer&am=${amount}&cu=INR&tn=JobCopilotPro`;
+      upiRealQrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiUrl)}`;
+    }
+    const txtInstantOnlineBtn = document.getElementById('txtInstantOnlineBtn');
+    if (txtInstantOnlineBtn) {
+      txtInstantOnlineBtn.textContent = `⚡ Instant Online Pay ₹${amount} (UPI • Cards • NetBanking)`;
     }
   }
+
+  // Fetch Public Config (UPI ID, WhatsApp number, Razorpay status)
+  async function loadPublicPaymentConfig() {
+    try {
+      const res = await fetch('/api/geo-pricing');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.merchantUpi) {
+          activeUpiId = data.merchantUpi;
+          const upiVal = document.getElementById('upiIdValDisplay');
+          if (upiVal) upiVal.textContent = activeUpiId;
+        }
+        if (data.businessWhatsapp) {
+          activeWhatsappNumber = data.businessWhatsapp;
+          const policyWa = document.getElementById('policyWhatsappLink');
+          if (policyWa) {
+            policyWa.textContent = `+${activeWhatsappNumber} (Tap to Chat)`;
+            policyWa.href = `https://wa.me/${activeWhatsappNumber}?text=${encodeURIComponent('Hi SoloPrime Team, I need assistance with JobCopilot Pro.')}`;
+          }
+        }
+        isRazorpayConfigured = Boolean(data.razorpayEnabled);
+        razorpayKeyId = data.razorpayKeyId || '';
+        updateUpiQrCode(activeSelectedAmount, activeSelectedLabel);
+      }
+    } catch (e) {
+      console.warn('Config fetch notice:', e.message);
+    }
+  }
+  loadPublicPaymentConfig();
 
   if (planInrLifetime) {
     planInrLifetime.addEventListener('click', () => {
       planInrLifetime.classList.add('active');
       if (planInrMonthly) planInrMonthly.classList.remove('active');
-      updateUpiQrCode('799', '₹799 Lifetime Pass');
+      updateUpiQrCode(799, '₹799 Lifetime Pass');
     });
   }
 
@@ -375,7 +417,7 @@
     planInrMonthly.addEventListener('click', () => {
       planInrMonthly.classList.add('active');
       if (planInrLifetime) planInrLifetime.classList.remove('active');
-      updateUpiQrCode('299', '₹299 Monthly Plan');
+      updateUpiQrCode(299, '₹299 Monthly Plan');
     });
   }
 
@@ -414,10 +456,175 @@
     });
   });
 
+  // Dynamic WhatsApp Fast-Track Click Handler
+  const btnWhatsappProof = document.getElementById('btnWhatsappProof');
+  if (btnWhatsappProof) {
+    btnWhatsappProof.addEventListener('click', () => {
+      const devId = getOrGenerateDeviceId();
+      const utrVal = (document.getElementById('webActivationInput')?.value || '').trim();
+      const orderId = `ORD-${Date.now().toString().slice(-6)}`;
+      const nowStr = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+
+      let msg = `🚀 *JobCopilot Pro — Payment Confirmation*\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `📌 *Plan:* ${activeSelectedLabel}\n`;
+      msg += `💳 *Order Ref:* ${orderId}\n`;
+      if (utrVal) {
+        msg += `🔢 *UTR / Ref:* ${utrVal}\n`;
+      } else {
+        msg += `🔢 *UTR / Ref:* [Screenshot Attached Below]\n`;
+      }
+      msg += `💻 *Device ID:* ${devId}\n`;
+      msg += `⏰ *Timestamp:* ${nowStr}\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `I have completed the payment via UPI. Please confirm my bank credit and issue my hardware-locked Pro license!`;
+
+      const cleanPhone = activeWhatsappNumber.replace(/[^0-9]/g, '');
+      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+      window.open(waUrl, '_blank');
+    });
+  }
+
+  // Official Razorpay Instant Online Checkout
+  const btnRazorpayInstantPay = document.getElementById('btnRazorpayInstantPay');
+  if (btnRazorpayInstantPay) {
+    btnRazorpayInstantPay.addEventListener('click', async () => {
+      btnRazorpayInstantPay.disabled = true;
+      btnRazorpayInstantPay.textContent = 'Initializing Secure Gateway...';
+
+      try {
+        const devId = getOrGenerateDeviceId();
+        const plan = (activeSelectedAmount == 299) ? 'pro_monthly' : 'lifetime_pass';
+        const res = await fetch('/api/payment/razorpay/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan, deviceId: devId })
+        });
+        const orderData = await res.json();
+
+        if (!orderData.success) {
+          throw new Error(orderData.error || 'Failed to initialize payment.');
+        }
+
+        if (window.Razorpay && orderData.keyId) {
+          const options = {
+            key: orderData.keyId,
+            amount: orderData.amount,
+            currency: 'INR',
+            name: 'SoloPrime Technologies',
+            description: `JobCopilot ${activeSelectedLabel}`,
+            order_id: (orderData.orderId && orderData.isLiveGateway) ? orderData.orderId : undefined,
+            prefill: {
+              name: 'Candidate Member',
+              email: 'candidate@career.in',
+              contact: '9999999999'
+            },
+            theme: { color: '#0284c7' },
+            handler: async function (response) {
+              btnRazorpayInstantPay.textContent = 'Verifying Transaction...';
+              const verifyRes = await fetch('/api/payment/razorpay/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id || orderData.orderId,
+                  razorpay_payment_id: response.razorpay_payment_id || `pay_${Date.now()}`,
+                  razorpay_signature: response.razorpay_signature,
+                  plan,
+                  deviceId: devId
+                })
+              });
+              const verifyData = await verifyRes.json();
+              if (verifyData.success) {
+                const state = getWebFreemium();
+                state.isPro = true;
+                state.proKey = verifyData.licenseKey;
+                state.token = verifyData.token;
+                state.buyer = verifyData.buyer;
+                state.tier = verifyData.tier;
+                state.daysRemaining = verifyData.daysRemaining;
+                state.expiresAt = verifyData.expiresAt;
+                saveWebFreemium(state);
+                renderWebFreemiumUI();
+                showToast(`👑 Pro Unlocked Instantly via Gateway!`);
+                closeWebUpgradeModal();
+              } else {
+                alert(`Payment verification notice: ${verifyData.error || 'Please contact support.'}`);
+              }
+            }
+          };
+          const rzp = new window.Razorpay(options);
+          rzp.open();
+        } else {
+          alert(`⚡ Direct UPI QR Method:\n\nTo ensure 100% security with zero merchant gateway fees, please scan the official UPI QR code below with PhonePe, Google Pay, or Paytm.\n\nThen tap 'Confirm on WhatsApp' to receive your hardware-locked Pro key in 2 minutes!`);
+        }
+      } catch (err) {
+        alert('Payment notice: ' + err.message);
+      } finally {
+        btnRazorpayInstantPay.disabled = false;
+        btnRazorpayInstantPay.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span id="txtInstantOnlineBtn">⚡ Instant Online Pay ₹${activeSelectedAmount} (UPI • Cards • NetBanking)</span>
+        `;
+      }
+    });
+  }
+
+  // Legal & Consumer Protection Policy Modal Handler
+  const policyModal = document.getElementById('policyModal');
+  const btnClosePolicyModal = document.getElementById('btnClosePolicyModal');
+  const policyTabs = document.querySelectorAll('[data-policy-tab]');
+  const policyContents = document.querySelectorAll('.policy-tab-content');
+
+  function openPolicyModal(tabId = 'tabRefundPolicy') {
+    if (!policyModal) return;
+    policyModal.style.display = 'flex';
+    policyTabs.forEach(t => {
+      if (t.dataset.policyTab === tabId) t.classList.add('active');
+      else t.classList.remove('active');
+    });
+    policyContents.forEach(c => {
+      if (c.id === tabId) c.style.display = 'block';
+      else c.style.display = 'none';
+    });
+  }
+
+  function closePolicyModal() {
+    if (policyModal) policyModal.style.display = 'none';
+  }
+
+  if (btnClosePolicyModal) {
+    btnClosePolicyModal.addEventListener('click', closePolicyModal);
+  }
+  if (policyModal) {
+    policyModal.addEventListener('click', (e) => {
+      if (e.target === policyModal) closePolicyModal();
+    });
+  }
+
+  policyTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const targetId = tab.dataset.policyTab;
+      policyTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      policyContents.forEach(c => {
+        if (c.id === targetId) c.style.display = 'block';
+        else c.style.display = 'none';
+      });
+    });
+  });
+
+  document.querySelectorAll('.btn-footer-policy').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = btn.dataset.target || 'tabRefundPolicy';
+      openPolicyModal(target);
+    });
+  });
+
   // Copy Buttons (UPI ID, Bank A/C, IFSC, Crypto)
   if (btnWebCopyUpi) {
     btnWebCopyUpi.addEventListener('click', () => {
-      navigator.clipboard.writeText('soloprime@upi').then(() => {
+      navigator.clipboard.writeText(activeUpiId).then(() => {
         btnWebCopyUpi.textContent = 'Copied!';
         setTimeout(() => { btnWebCopyUpi.textContent = 'Copy'; }, 2000);
       });

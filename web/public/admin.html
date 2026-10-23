@@ -133,9 +133,38 @@
         </div>
       </div>
 
+      <!-- Founder Payment & WhatsApp Setup Status Card -->
+      <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+        <div style="font-size: 13px; font-weight: 800; color: #38bdf8; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <span>📱 Founder WhatsApp & UPI Channel Config</span>
+          <span style="font-size: 11px; color: #10b981;">✓ Live & Armed</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 11.5px;">
+          <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+            <div style="color: #94a3b8; font-size: 10.5px;">Business WhatsApp Desk</div>
+            <strong style="color: #22c55e; font-size: 13px;" id="adminDisplayWhatsapp">+91 9XXXXXXXXX</strong>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Env: <code>FOUNDER_WHATSAPP</code></div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+            <div style="color: #94a3b8; font-size: 10.5px;">Merchant UPI VPA</div>
+            <strong style="color: #38bdf8; font-size: 13px;" id="adminDisplayUpi">soloprime@upi</strong>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Env: <code>MERCHANT_UPI_ID</code></div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+            <div style="color: #94a3b8; font-size: 10.5px;">Razorpay Gateway</div>
+            <strong style="color: #fbbf24; font-size: 13px;" id="adminDisplayRzp">Ready for Credentials</strong>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Env: <code>RAZORPAY_KEY_ID</code></div>
+          </div>
+        </div>
+        <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <a href="#" id="adminTestWhatsappLink" target="_blank" class="btn btn-outline btn-sm" style="font-size: 11px; color: #22c55e; border-color: rgba(34, 197, 94, 0.4); text-decoration: none;">💬 Test WhatsApp Flow ↗</a>
+          <span style="font-size: 11px; color: #94a3b8;">Click to verify how customer payment messages land in your WhatsApp.</span>
+        </div>
+      </div>
+
       <!-- Key Generator -->
       <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-        <div style="font-size: 13px; font-weight: 700; color: #c084fc; margin-bottom: 10px;">⚡ Issue New 1-Device Hardware-Locked Key</div>
+        <div style="font-size: 13px; font-weight: 700; color: #c084fc; margin-bottom: 10px;">⚡ Issue New 2-Device Hardware-Locked Key (Laptop + Mobile)</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
           <div>
             <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">Customer Name</label>
@@ -264,6 +293,30 @@
       statSales.textContent = data.stats.paidSales || 0;
       statLocks.textContent = data.stats.totalLockedDevices || 0;
       statTrials.textContent = data.stats.trialUsers || 0;
+
+      // Populate WhatsApp & Gateway Status
+      fetch('/api/geo-pricing').then(r => r.json()).then(cfg => {
+        if (cfg.businessWhatsapp) {
+          const el = document.getElementById('adminDisplayWhatsapp');
+          if (el) el.textContent = `+${cfg.businessWhatsapp}`;
+          const testLink = document.getElementById('adminTestWhatsappLink');
+          if (testLink) {
+            const sampleMsg = encodeURIComponent('Hi SoloPrime Founder! Testing WhatsApp payment confirmation link.');
+            testLink.href = `https://wa.me/${cfg.businessWhatsapp}?text=${sampleMsg}`;
+          }
+        }
+        if (cfg.merchantUpi) {
+          const el = document.getElementById('adminDisplayUpi');
+          if (el) el.textContent = cfg.merchantUpi;
+        }
+        if (cfg.razorpayEnabled) {
+          const el = document.getElementById('adminDisplayRzp');
+          if (el) {
+            el.textContent = `Active (${cfg.razorpayKeyId.slice(0, 8)}...)`;
+            el.style.color = '#10b981';
+          }
+        }
+      }).catch(() => {});
 
       // Pending UTRs
       const pending = data.pendingUtrs || [];
