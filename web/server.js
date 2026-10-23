@@ -1506,6 +1506,22 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
+  // SoloPrime-Defense-Shield/2.0: AI Scraper, LLM Crawler, & Automated Exploit Firewall
+  const incomingUa = (req.headers['user-agent'] || '').toLowerCase();
+  const botSignatures = [
+    'gptbot', 'chatgpt-user', 'anthropic-ai', 'claude-web', 'bytespider',
+    'semrushbot', 'ahrefsbot', 'dotbot', 'petalbot', 'scrapy', 'python-requests',
+    'aiohttp', 'urllib', 'curl/', 'wget/', 'headlesschrome', 'puppeteer', 'playwright', 'selenium'
+  ];
+  if (botSignatures.some(sig => incomingUa.includes(sig)) && !pathname.startsWith('/robots.txt')) {
+    res.setHeader('X-Defense-Action', 'BLOCKED_AI_SCRAPER');
+    res.writeHead(403, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({
+      error: 'Access Denied: Automated bot scraping, AI crawlers, and programmatic scrapers are strictly blocked by SoloPrime-Defense-Shield/2.0.',
+      status: 403
+    }));
+  }
+
   // API 0: Cloud Health Check (Render / Railway / Docker Uptime Monitor)
   if (pathname === '/api/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -2224,42 +2240,69 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
 
         const vault = loadVaultSafely();
 
-        // Handle Indian Direct UPI UTR Reference Number
+        // SoloPrime Anti-Fraud Engine: Strictly Block Unverified UTR Self-Activation
         if (isUtrRef) {
           const utrKey = `PRO-UPI-${digitsOnly.slice(-6)}`;
-          if (!vault.licenses[utrKey]) {
-            vault.licenses[utrKey] = {
-              buyer: `UPI Verified (UTR-${digitsOnly.slice(-4)})`,
-              email: 'upi-transfer@client.in',
-              tier: 'lifetime_pass',
-              maxDevices: 1,
-              activeDevices: [{
+          const existingLic = vault.licenses[utrKey];
+
+          // Verified & Approved by Founder / Bank Notification
+          if (existingLic && existingLic.status === 'active') {
+            existingLic.activeDevices = existingLic.activeDevices || [];
+            const isDeviceRegistered = existingLic.activeDevices.some(d => d.deviceId === deviceId);
+
+            if (!isDeviceRegistered) {
+              const maxAllowed = existingLic.maxDevices || 1;
+              if (existingLic.activeDevices.length >= maxAllowed) {
+                recordFailedAttempt(req);
+                res.writeHead(403, { 'Content-Type': 'application/json' });
+                return res.end(JSON.stringify({ 
+                  success: false, 
+                  error: `Device limit reached (${existingLic.activeDevices.length}/${maxAllowed}). This approved pass is already locked to another computer.` 
+                }));
+              }
+              existingLic.activeDevices.push({
                 deviceId,
                 platform: clientPlatform || 'Web / Chrome Extension',
                 activatedAt: new Date().toISOString()
-              }],
-              createdAt: new Date().toISOString(),
-              status: 'active',
-              utrNumber: digitsOnly
-            };
-            saveVaultSafely(vault);
+              });
+              saveVaultSafely(vault);
+            }
+
+            clearFailedAttempts(req);
+            const token = crypto.createHmac('sha256', vault.secretSalt).update(`${utrKey}:${deviceId}`).digest('hex');
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({
+              success: true,
+              token,
+              licenseKey: utrKey,
+              tier: existingLic.tier || 'lifetime_pass',
+              buyer: existingLic.buyer,
+              maxDevices: 1,
+              activeDevicesCount: existingLic.activeDevices.length,
+              daysRemaining: 'Lifetime',
+              expiresAt: null
+            }));
           }
 
-          clearFailedAttempts(req);
-          const lic = vault.licenses[utrKey];
-          const token = crypto.createHmac('sha256', vault.secretSalt).update(`${utrKey}:${deviceId}`).digest('hex');
-          res.writeHead(200, { 'Content-Type': 'application/json' });
+          // Case 2: Unverified / Pending UTR — Record in pending queue, DO NOT auto-grant Pro!
+          vault.pendingUtrs = vault.pendingUtrs || {};
+          vault.pendingUtrs[digitsOnly] = {
+            utrNumber: digitsOnly,
+            deviceId,
+            clientPlatform: clientPlatform || 'Web Dashboard',
+            ip: getClientIp(req),
+            submittedAt: new Date().toISOString(),
+            status: 'pending_bank_verification'
+          };
+          saveVaultSafely(vault);
+
+          recordFailedAttempt(req, 10);
+          res.writeHead(202, { 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({
-            success: true,
-            token,
-            licenseKey: utrKey,
-            tier: lic.tier,
-            buyer: lic.buyer,
-            maxDevices: 1,
-            activeDevicesCount: 1,
-            daysRemaining: 'Lifetime',
-            expiresAt: null,
-            isUtrProvisioned: true
+            success: false,
+            pending: true,
+            utr: digitsOnly,
+            error: `Payment verification pending for UTR ${digitsOnly}. To prevent fraud, accounts unlock once bank credit is confirmed (2-5 mins). Tap 'Confirm on WhatsApp' to fast-track your key instantly!`
           }));
         }
 
@@ -2445,13 +2488,18 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
   }
 
   // API 17: Admin Issue New Customer License Key
-  if (pathname === '/api/admin/create-license' && req.method === 'POST') {
+  if ((pathname === '/api/admin/create-license' || pathname === '/api/admin/issue-license') && req.method === 'POST') {
     if (!checkRateLimit(req, res)) return;
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
       try {
-        const { buyerName, buyerEmail, tier, adminSecret } = JSON.parse(body || '{}');
+        const parsed = JSON.parse(body || '{}');
+        const adminSecret = parsed.adminSecret || req.headers['x-admin-secret'];
+        const buyerName = parsed.buyerName || parsed.buyer;
+        const buyerEmail = parsed.buyerEmail || parsed.email;
+        const tier = parsed.tier;
+
         if (adminSecret !== ADMIN_SECRET && adminSecret !== 'SOLOPRIME_ADMIN_VAULT_2026') {
           recordFailedAttempt(req);
           res.writeHead(401, { 'Content-Type': 'application/json' });
@@ -2499,78 +2547,96 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
   }
 
   // API 18: Admin List All Registered Licenses & Sales Analytics
-  if (pathname === '/api/admin/list-licenses' && req.method === 'POST') {
+  if ((pathname === '/api/admin/list-licenses' || pathname === '/api/admin/licenses') && (req.method === 'POST' || req.method === 'GET')) {
     if (!checkRateLimit(req, res)) return;
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try {
-        const { adminSecret } = JSON.parse(body || '{}');
-        if (adminSecret !== ADMIN_SECRET && adminSecret !== 'SOLOPRIME_ADMIN_VAULT_2026') {
-          recordFailedAttempt(req);
-          res.writeHead(401, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ error: 'Unauthorized admin access.' }));
-        }
 
-        clearFailedAttempts(req);
-        const vault = loadVaultSafely();
-
-        let totalInrRevenue = 0;
-        let totalUsdRevenue = 0;
-        let activeSalesCount = 0;
-        let totalDevicesLocked = 0;
-
-        for (const [key, data] of Object.entries(vault.licenses)) {
-          if (data.status === 'active') {
-            if (data.tier !== 'founder_unlimited') {
-              activeSalesCount++;
-              if (data.tier === 'lifetime_pass') totalInrRevenue += 799;
-              else if (data.tier === 'pro_monthly') totalInrRevenue += 299;
-              else if (data.tier === 'global_season') totalUsdRevenue += 49;
-              else if (data.tier === 'global_monthly') totalUsdRevenue += 19;
-            }
-          }
-          totalDevicesLocked += (data.activeDevices || []).length;
-        }
-
-        const safeLicenses = Object.entries(vault.licenses).map(([key, data]) => {
-          const daysRemaining = data.expiresAt 
-            ? Math.max(0, Math.ceil((new Date(data.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-            : 'Lifetime';
-          return {
-            key,
-            buyer: data.buyer,
-            email: data.email,
-            tier: data.tier,
-            status: data.status,
-            maxDevices: data.maxDevices || 1,
-            activeDevicesCount: (data.activeDevices || []).length,
-            activeDevices: data.activeDevices || [],
-            createdAt: data.createdAt,
-            expiresAt: data.expiresAt || null,
-            daysRemaining,
-            utrNumber: data.utrNumber || null
-          };
-        });
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ 
-          success: true, 
-          analytics: {
-            activeSalesCount,
-            totalInrRevenue,
-            totalUsdRevenue,
-            totalDevicesLocked,
-            totalTrialUsers: deviceTrialStore.size
-          },
-          licenses: safeLicenses 
-        }));
-      } catch (e) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ error: e.message }));
+    const executeList = (adminSecret) => {
+      if (adminSecret !== ADMIN_SECRET && adminSecret !== 'SOLOPRIME_ADMIN_VAULT_2026') {
+        recordFailedAttempt(req);
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Unauthorized admin access.' }));
       }
-    });
-    return;
+
+      clearFailedAttempts(req);
+      const vault = loadVaultSafely();
+
+      let totalInrRevenue = 0;
+      let totalUsdRevenue = 0;
+      let activeSalesCount = 0;
+      let totalDevicesLocked = 0;
+
+      for (const [key, data] of Object.entries(vault.licenses)) {
+        if (data.status === 'active') {
+          if (data.tier !== 'founder_unlimited') {
+            activeSalesCount++;
+            if (data.tier === 'lifetime_pass') totalInrRevenue += 799;
+            else if (data.tier === 'pro_monthly') totalInrRevenue += 299;
+            else if (data.tier === 'global_season') totalUsdRevenue += 49;
+            else if (data.tier === 'global_monthly') totalUsdRevenue += 19;
+          }
+        }
+        totalDevicesLocked += (data.activeDevices || []).length;
+      }
+
+      const safeLicenses = Object.entries(vault.licenses).map(([key, data]) => {
+        const daysRemaining = data.expiresAt 
+          ? Math.max(0, Math.ceil((new Date(data.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+          : 'Lifetime';
+        return {
+          key,
+          buyer: data.buyer,
+          email: data.email,
+          tier: data.tier,
+          status: data.status,
+          maxDevices: data.maxDevices || 1,
+          activeDevicesCount: (data.activeDevices || []).length,
+          activeDevices: data.activeDevices || [],
+          createdAt: data.createdAt,
+          expiresAt: data.expiresAt || null,
+          daysRemaining,
+          utrNumber: data.utrNumber || null
+        };
+      });
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ 
+        success: true, 
+        stats: {
+          formattedRevenue: `₹${totalInrRevenue}`,
+          paidSales: activeSalesCount,
+          totalLockedDevices: totalDevicesLocked,
+          trialUsers: deviceTrialStore.size
+        },
+        analytics: {
+          activeSalesCount,
+          totalInrRevenue,
+          totalUsdRevenue,
+          totalDevicesLocked,
+          totalTrialUsers: deviceTrialStore.size
+        },
+        licenses: safeLicenses,
+        pendingUtrs: Object.values(vault.pendingUtrs || {})
+      }));
+    };
+
+    if (req.method === 'GET') {
+      const headerSecret = req.headers['x-admin-secret'] || reqUrl.searchParams.get('secret');
+      return executeList(headerSecret);
+    } else {
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const parsed = JSON.parse(body || '{}');
+          const secret = parsed.adminSecret || req.headers['x-admin-secret'];
+          return executeList(secret);
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+      return;
+    }
   }
 
   // API 19: Admin Revoke / Deactivate Key (Anti-Piracy & Refund Action)
@@ -2636,6 +2702,100 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
           res.writeHead(404, { 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({ error: 'License key not found.' }));
         }
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
+  // API 21: Admin 1-Click Approve UPI Payment UTR (After Verifying Real Bank Credit)
+  if (pathname === '/api/admin/approve-utr' && req.method === 'POST') {
+    if (!checkRateLimit(req, res)) return;
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const { adminSecret, utrNumber, buyerName, tier } = JSON.parse(body || '{}');
+        if (adminSecret !== ADMIN_SECRET && adminSecret !== 'SOLOPRIME_ADMIN_VAULT_2026') {
+          recordFailedAttempt(req);
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'Unauthorized admin access.' }));
+        }
+
+        clearFailedAttempts(req);
+        const vault = loadVaultSafely();
+        const digitsOnly = String(utrNumber || '').replace(/[^0-9]/g, '');
+        if (!digitsOnly || digitsOnly.length < 8) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'Invalid UTR format.' }));
+        }
+
+        const utrKey = `PRO-UPI-${digitsOnly.slice(-6)}`;
+        const pending = (vault.pendingUtrs && vault.pendingUtrs[digitsOnly]) || {};
+
+        vault.licenses[utrKey] = {
+          buyer: buyerName || `Verified Member (UTR-${digitsOnly.slice(-4)})`,
+          email: 'verified-buyer@client.in',
+          tier: tier || 'lifetime_pass',
+          maxDevices: 1,
+          activeDevices: pending.deviceId ? [{
+            deviceId: pending.deviceId,
+            platform: pending.clientPlatform || 'Web / Chrome Extension',
+            activatedAt: new Date().toISOString()
+          }] : [],
+          createdAt: new Date().toISOString(),
+          expiresAt: null,
+          status: 'active',
+          utrNumber: digitsOnly
+        };
+
+        if (vault.pendingUtrs && vault.pendingUtrs[digitsOnly]) {
+          delete vault.pendingUtrs[digitsOnly];
+        }
+
+        saveVaultSafely(vault);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ 
+          success: true, 
+          licenseKey: utrKey, 
+          buyer: vault.licenses[utrKey].buyer,
+          message: `✓ UTR ${digitsOnly} APPROVED! License ${utrKey} is now ACTIVE.` 
+        }));
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
+  // API 22: Admin Reject Fake / Bogus UTR
+  if (pathname === '/api/admin/reject-utr' && req.method === 'POST') {
+    if (!checkRateLimit(req, res)) return;
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const { adminSecret, utrNumber } = JSON.parse(body || '{}');
+        if (adminSecret !== ADMIN_SECRET && adminSecret !== 'SOLOPRIME_ADMIN_VAULT_2026') {
+          recordFailedAttempt(req);
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'Unauthorized admin access.' }));
+        }
+
+        clearFailedAttempts(req);
+        const vault = loadVaultSafely();
+        const digitsOnly = String(utrNumber || '').replace(/[^0-9]/g, '');
+
+        if (vault.pendingUtrs && vault.pendingUtrs[digitsOnly]) {
+          delete vault.pendingUtrs[digitsOnly];
+          saveVaultSafely(vault);
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ success: true, message: `UTR ${digitsOnly} rejected and purged.` }));
       } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ error: e.message }));

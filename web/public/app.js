@@ -490,6 +490,19 @@
           closeWebUpgradeModal();
         }, 1400);
         return true;
+      } else if (data.pending) {
+        if (webActivationStatus) {
+          webActivationStatus.innerHTML = `
+            <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); padding: 10px 12px; border-radius: 8px; color: #fbbf24; text-align: left; font-size: 11.5px; line-height: 1.5;">
+              <strong>⏳ Payment Verification In Progress</strong><br>
+              Reference <code>${data.utr || key}</code> has been submitted. To prevent fraudulent bypasses, accounts unlock once bank credit is confirmed (2-5 mins).<br>
+              <a href="https://wa.me/?text=Hi%20SoloPrime%2C%20I%20have%20paid%20for%20JobCopilot%20Pro.%20My%20UTR%20is%20${encodeURIComponent(data.utr || key)}" target="_blank" style="color: #38bdf8; font-weight: 700; text-decoration: underline; display: inline-block; margin-top: 5px;">💬 Send screenshot on WhatsApp for instant 1-min activation ➔</a>
+            </div>
+          `;
+          webActivationStatus.style.display = 'block';
+        }
+        showToast('⏳ UTR submitted for bank verification.');
+        return false;
       } else {
         if (webActivationStatus) {
           webActivationStatus.textContent = `❌ ${data.error || 'Invalid or already locked license.'}`;

@@ -159,6 +159,32 @@
         <div id="adminGeneratedKeyNotice" style="display: none; margin-top: 10px; font-size: 12.5px; font-weight: 700; color: #10b981;"></div>
       </div>
 
+      <!-- Pending UPI Verifications Panel (Zero-Fraud Protocol) -->
+      <div id="pendingUtrSection" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px; display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 13px; font-weight: 800; color: #fbbf24;">⚡ PENDING UPI PAYMENT VERIFICATIONS</span>
+            <span id="pendingCountBadge" style="background: #f59e0b; color: #000; font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 12px;">0</span>
+          </div>
+          <span style="font-size: 11px; color: #94a3b8;">Check bank credit notification, then 1-click approve</span>
+        </div>
+        <div style="max-height: 200px; overflow-y: auto; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;">
+          <table class="admin-table">
+            <thead>
+              <tr style="background: rgba(245, 158, 11, 0.12);">
+                <th>Submitted UTR</th>
+                <th>Device ID / IP</th>
+                <th>Time</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="pendingUtrTableBody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Keys Table -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <span style="font-size: 13px; font-weight: 700; color: #fff;">Registered Licenses & Device Locks</span>
@@ -198,6 +224,9 @@
     const statLocks = document.getElementById('adminStatLockedDevices');
     const statTrials = document.getElementById('adminStatTrialUsers');
     const tableBody = document.getElementById('adminLicensesTableBody');
+    const pendingUtrSection = document.getElementById('pendingUtrSection');
+    const pendingCountBadge = document.getElementById('pendingCountBadge');
+    const pendingUtrTableBody = document.getElementById('pendingUtrTableBody');
     const btnGen = document.getElementById('btnAdminGenerateKey');
     const genNotice = document.getElementById('adminGeneratedKeyNotice');
     const btnRefresh = document.getElementById('btnAdminRefreshLicenses');
@@ -236,6 +265,38 @@
       statLocks.textContent = data.stats.totalLockedDevices || 0;
       statTrials.textContent = data.stats.trialUsers || 0;
 
+      // Pending UTRs
+      const pending = data.pendingUtrs || [];
+      if (pending.length > 0) {
+        pendingUtrSection.style.display = 'block';
+        pendingCountBadge.textContent = pending.length;
+        pendingUtrTableBody.innerHTML = '';
+        pending.forEach(p => {
+          const ptr = document.createElement('tr');
+          const timeStr = p.submittedAt ? new Date(p.submittedAt).toLocaleTimeString() : 'Recent';
+          ptr.innerHTML = `
+            <td style="font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #fbbf24;">${p.utrNumber}</td>
+            <td style="font-size: 11px; color: #94a3b8;">${(p.deviceId || 'DEV').slice(0, 14)}...<br><span style="color: #64748b;">${p.ip || ''}</span></td>
+            <td style="font-size: 11px; color: #94a3b8;">${timeStr}</td>
+            <td style="text-align: right; white-space: nowrap;">
+              <button class="btn btn-primary btn-sm btn-approve-utr" data-utr="${p.utrNumber}" style="padding: 3px 8px; font-size: 11px; background: #10b981; border-color: #10b981;">✓ Approve</button>
+              <button class="btn btn-outline btn-sm btn-reject-utr" data-utr="${p.utrNumber}" style="padding: 3px 8px; font-size: 11px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4); margin-left: 4px;">✕ Reject</button>
+            </td>
+          `;
+          pendingUtrTableBody.appendChild(ptr);
+        });
+
+        // Wire approve & reject buttons
+        pendingUtrTableBody.querySelectorAll('.btn-approve-utr').forEach(b => {
+          b.addEventListener('click', () => approveUtr(b.dataset.utr));
+        });
+        pendingUtrTableBody.querySelectorAll('.btn-reject-utr').forEach(b => {
+          b.addEventListener('click', () => rejectUtr(b.dataset.utr));
+        });
+      } else {
+        pendingUtrSection.style.display = 'none';
+      }
+
       tableBody.innerHTML = '';
       (data.licenses || []).forEach(lic => {
         const tr = document.createElement('tr');
@@ -255,6 +316,41 @@
         `;
         tableBody.appendChild(tr);
       });
+    }
+
+    async function approveUtr(utr) {
+      if (!confirm(`Are you sure you received payment for UTR: ${utr} in your bank?`)) return;
+      try {
+        const res = await fetch('/api/admin/approve-utr', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminSecret, utrNumber: utr })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(`✓ Approved! License Key created: ${data.licenseKey}`);
+          navigator.clipboard.writeText(data.licenseKey);
+          refreshLicenses();
+        } else {
+          alert(data.error || 'Failed to approve');
+        }
+      } catch {
+        alert('Network error approving UTR');
+      }
+    }
+
+    async function rejectUtr(utr) {
+      if (!confirm(`Reject fake/uncredited UTR: ${utr}?`)) return;
+      try {
+        const res = await fetch('/api/admin/reject-utr', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminSecret, utrNumber: utr })
+        });
+        refreshLicenses();
+      } catch {
+        alert('Network error rejecting UTR');
+      }
     }
 
     btnGen.addEventListener('click', async () => {
