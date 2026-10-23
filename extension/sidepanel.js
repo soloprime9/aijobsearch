@@ -13,13 +13,13 @@
 
   // Default Candidate Profile
   const DEFAULT_PROFILE = {
-    fullName: 'Aman Rajbhar',
-    email: 'amankumar@gmail.com',
-    phone: '+91 98765 43210',
-    location: 'Bengaluru, India (Remote or Hybrid)',
-    headline: 'Full Stack & AI Engineer | Python, React, TypeScript, FastAPI & Production Systems',
-    skills: 'Python, JavaScript, TypeScript, React, Node.js, FastAPI, Docker, Kubernetes, PostgreSQL, Git, CI/CD, PyTorch, REST APIs, HTML, CSS',
-    achievements: '• Architected high-throughput AI document indexing engine processing 2.5M+ embeddings daily with 99.98% pipeline uptime.\n• Developed and deployed full stack production microservices with sub-second inference and REST APIs.\n• Built high-performance microservices handling data ingestion with 99.9% uptime.'
+    fullName: '',
+    email: '',
+    phone: '',
+    location: '',
+    headline: '',
+    skills: '',
+    achievements: ''
   };
 
   // Curated Salary Benchmarks

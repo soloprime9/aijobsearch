@@ -1153,13 +1153,13 @@ function getCandidateProfile() {
     return JSON.parse(fs.readFileSync(profPath, 'utf8'));
   } catch {
     return {
-      fullName: "Aman Rajbhar",
-      email: "amankumar@gmail.com",
-      phone: "+91 98765 43210",
-      location: "Bengaluru, India (Remote or Hybrid)",
-      headline: "AI & Machine Learning Engineer | Generative AI, PyTorch & Production Systems",
-      skills: "Python, PyTorch, TensorFlow, Scikit-learn, LLMs, Generative AI, LangChain, LlamaIndex, RAG, Vector Databases, ChromaDB, Pinecone, FastAPI, Docker, Kubernetes, PostgreSQL, REST APIs, Git, CI/CD",
-      achievements: "• Architected high-throughput AI document indexing engine processing 2.5M+ embeddings daily with 99.98% pipeline uptime.\n• Developed and deployed end-to-end LLM fine-tuning pipelines and predictive ML models in production with sub-second inference.\n• Built high-performance microservices handling data ingestion and vector retrieval with 99.9% uptime.\n• Optimized distributed data pipelines and automated model evaluation benchmarks, reducing latency by 42%."
+      fullName: "",
+      email: "",
+      phone: "",
+      location: "",
+      headline: "",
+      skills: "",
+      achievements: ""
     };
   }
 }
@@ -1520,6 +1520,22 @@ const server = http.createServer(async (req, res) => {
     const content = fs.readFileSync(path.join(__dirname, 'public', 'app.js'), 'utf8');
     res.writeHead(200, { 'Content-Type': 'application/javascript' });
     return res.end(content);
+  }
+  if (pathname === '/admin.html') {
+    const adminPath = path.join(__dirname, 'public', 'admin.html');
+    if (fs.existsSync(adminPath)) {
+      const content = fs.readFileSync(adminPath, 'utf8');
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      return res.end(content);
+    }
+  }
+  if (pathname === '/robots.txt') {
+    const robotsPath = path.join(__dirname, 'public', 'robots.txt');
+    if (fs.existsSync(robotsPath)) {
+      const content = fs.readFileSync(robotsPath, 'utf8');
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      return res.end(content);
+    }
   }
 
   // Chrome Extension 1-Click ZIP Download
@@ -1937,7 +1953,7 @@ Requirement: Forward-looking, impactful tone. Address directly to the Hiring Tea
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({
-          letter: letter || `Dear Hiring Team,\n\nI am writing to express my focused interest in the ${job.title} role at ${job.company}. With verified engineering experience developing scalable AI microservices, RAG architectures, and resilient Python pipelines, my background directly aligns with your requirements.\n\nIn my recent initiatives, I built high-throughput document indexing systems processing over 2.5M embeddings daily while maintaining 99.98% pipeline uptime. My technical toolkit includes Python, PyTorch, LangChain, FastAPI, Docker, and Kubernetes.\n\nI look forward to discussing how my technical background can accelerate engineering milestones for ${job.company}.\n\nSincerely,\n${profile.fullName || 'Aman Rajbhar'}`,
+          letter: letter || `Dear Hiring Team,\n\nI am writing to express my focused interest in the ${job.title} role at ${job.company}. With verified engineering experience developing scalable AI microservices, RAG architectures, and resilient Python pipelines, my background directly aligns with your requirements.\n\nIn my recent initiatives, I built high-throughput document indexing systems processing over 2.5M embeddings daily while maintaining 99.98% pipeline uptime. My technical toolkit includes Python, PyTorch, LangChain, FastAPI, Docker, and Kubernetes.\n\nI look forward to discussing how my technical background can accelerate engineering milestones for ${job.company}.\n\nSincerely,\n${profile.fullName || 'Candidate Name'}`,
           summary
         }));
       } catch (e) {

@@ -519,256 +519,7 @@
     }
   } catch {}
 
-  // =========================================================================
-  // FOUNDER ADMIN VAULT ENGINE
-  // =========================================================================
-  let activeAdminSecret = '';
 
-  const btnOpenAdminVault = document.getElementById('btnOpenAdminVault');
-  const adminVaultModal = document.getElementById('adminVaultModal');
-  const btnCloseAdminModal = document.getElementById('btnCloseAdminModal');
-  const adminSecretInput = document.getElementById('adminSecretInput');
-  const btnAdminUnlock = document.getElementById('btnAdminUnlock');
-  const adminAuthError = document.getElementById('adminAuthError');
-  const adminAuthSection = document.getElementById('adminAuthSection');
-  const adminDashSection = document.getElementById('adminDashSection');
-  const btnAdminGenerateKey = document.getElementById('btnAdminGenerateKey');
-  const btnAdminRefreshLicenses = document.getElementById('btnAdminRefreshLicenses');
-  const adminNewBuyer = document.getElementById('adminNewBuyer');
-  const adminNewEmail = document.getElementById('adminNewEmail');
-  const adminNewTier = document.getElementById('adminNewTier');
-  const adminGeneratedKeyNotice = document.getElementById('adminGeneratedKeyNotice');
-  const adminLicensesTableBody = document.getElementById('adminLicensesTableBody');
-
-  if (btnOpenAdminVault) {
-    btnOpenAdminVault.addEventListener('click', () => {
-      if (adminVaultModal) adminVaultModal.style.display = 'flex';
-      if (adminSecretInput) adminSecretInput.focus();
-    });
-  }
-
-  if (btnCloseAdminModal) {
-    btnCloseAdminModal.addEventListener('click', () => {
-      if (adminVaultModal) adminVaultModal.style.display = 'none';
-    });
-  }
-
-  if (adminVaultModal) {
-    adminVaultModal.addEventListener('click', (e) => {
-      if (e.target === adminVaultModal) adminVaultModal.style.display = 'none';
-    });
-  }
-
-  let currentLoadedLicenses = [];
-  const btnAdminExportCsv = document.getElementById('btnAdminExportCsv');
-
-  async function loadAdminLicenses() {
-    if (!activeAdminSecret) return;
-    try {
-      const res = await fetch('/api/admin/list-licenses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminSecret: activeAdminSecret })
-      });
-      const data = await res.json();
-      if (data.success) {
-        currentLoadedLicenses = data.licenses || [];
-
-        // Update Live Sales & Revenue Metrics Cards
-        if (data.analytics) {
-          const revEl = document.getElementById('adminStatRevenue');
-          const salesEl = document.getElementById('adminStatSalesCount');
-          const lockedEl = document.getElementById('adminStatLockedDevices');
-          const trialEl = document.getElementById('adminStatTrialUsers');
-
-          let revText = `₹${(data.analytics.totalInrRevenue || 0).toLocaleString('en-IN')}`;
-          if (data.analytics.totalUsdRevenue > 0) {
-            revText += ` + $${data.analytics.totalUsdRevenue}`;
-          }
-          if (revEl) revEl.textContent = revText;
-          if (salesEl) salesEl.textContent = `${data.analytics.activeSalesCount} Paid`;
-          if (lockedEl) lockedEl.textContent = `${data.analytics.totalDevicesLocked} PC`;
-          if (trialEl) trialEl.textContent = `${data.analytics.totalTrialUsers} Active`;
-        }
-
-        if (adminLicensesTableBody) {
-          adminLicensesTableBody.innerHTML = '';
-          currentLoadedLicenses.forEach(lic => {
-          const tr = document.createElement('tr');
-          tr.style.borderBottom = '1px solid var(--border-color)';
-          const statusColor = lic.status === 'active' ? '#10b981' : '#ef4444';
-          const lockBadge = lic.activeDevicesCount > 0 
-            ? `<span style="color: #f59e0b; font-weight: 700;">Locked (${lic.activeDevicesCount}/${lic.maxDevices})</span>`
-            : `<span style="color: #a1a1aa;">Unclaimed (0/${lic.maxDevices})</span>`;
-
-          tr.innerHTML = `
-            <td style="padding: 8px 10px; font-family: monospace; font-weight: 700; color: #38bdf8;">${lic.key}</td>
-            <td style="padding: 8px 10px;">${lic.buyer}<br><span style="color: var(--text-muted); font-size: 10px;">${lic.email}</span></td>
-            <td style="padding: 8px 10px; font-size: 10px; text-transform: uppercase;">${lic.tier}</td>
-            <td style="padding: 8px 10px;">${lockBadge}</td>
-            <td style="padding: 8px 10px; color: ${statusColor}; font-weight: 700;">${lic.status.toUpperCase()}</td>
-            <td style="padding: 8px 10px; text-align: right; white-space: nowrap;">
-              <button class="btn btn-outline btn-sm btn-admin-copy-link" data-key="${lic.key}" style="padding: 2px 6px; font-size: 9.5px; margin-right: 4px; color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);" title="Copy 1-Click Magic Link">🔗 Link</button>
-              <button class="btn btn-outline btn-sm btn-admin-reset-dev" data-key="${lic.key}" style="padding: 2px 6px; font-size: 9.5px; margin-right: 4px;" title="Allow user to switch to new computer">Reset PC</button>
-              <button class="btn btn-outline btn-sm btn-admin-revoke" data-key="${lic.key}" style="padding: 2px 6px; font-size: 9.5px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" title="Revoke this key">Revoke</button>
-            </td>
-          `;
-
-          tr.querySelector('.btn-admin-copy-link').addEventListener('click', () => {
-            const magicLink = `${window.location.origin}/?activate=${lic.key}`;
-            navigator.clipboard.writeText(magicLink);
-            showToast(`✓ 1-Click Link Copied for ${lic.key}`);
-          });
-
-          tr.querySelector('.btn-admin-reset-dev').addEventListener('click', async () => {
-            if (!confirm(`Reset hardware lock for ${lic.key}? User will be able to bind their new laptop.`)) return;
-            await fetch('/api/admin/reset-device', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ adminSecret: activeAdminSecret, licenseKey: lic.key })
-            });
-            loadAdminLicenses();
-            showToast(`✓ Device lock reset for ${lic.key}`);
-          });
-
-          tr.querySelector('.btn-admin-revoke').addEventListener('click', async () => {
-            if (!confirm(`Revoke license ${lic.key}? User will lose access immediately.`)) return;
-            await fetch('/api/admin/revoke-license', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ adminSecret: activeAdminSecret, licenseKey: lic.key })
-            });
-            loadAdminLicenses();
-            showToast(`✓ Revoked ${lic.key}`);
-          });
-
-          adminLicensesTableBody.appendChild(tr);
-        });
-      }
-    }
-    } catch (e) {
-      console.warn('Admin license load error:', e);
-    }
-  }
-
-  if (btnAdminExportCsv) {
-    btnAdminExportCsv.addEventListener('click', () => {
-      if (!currentLoadedLicenses || currentLoadedLicenses.length === 0) {
-        showToast('No license records to export', true);
-        return;
-      }
-      let csv = 'License Key,Customer Name,Email,Tier,Status,Active Devices,Max Devices,Created At,UTR Number\n';
-      currentLoadedLicenses.forEach(lic => {
-        const cleanName = `"${(lic.buyer || '').replace(/"/g, '""')}"`;
-        const cleanEmail = `"${(lic.email || '').replace(/"/g, '""')}"`;
-        csv += `${lic.key},${cleanName},${cleanEmail},${lic.tier},${lic.status},${lic.activeDevicesCount},${lic.maxDevices},${lic.createdAt || ''},${lic.utrNumber || ''}\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `job_copilot_sales_vault_${new Date().toISOString().slice(0, 10)}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast('✓ Sales Vault CSV Downloaded!');
-    });
-  }
-
-  if (btnAdminUnlock) {
-    btnAdminUnlock.addEventListener('click', async () => {
-      const pin = (adminSecretInput?.value || '').trim();
-      if (!pin) return;
-      btnAdminUnlock.disabled = true;
-      btnAdminUnlock.textContent = 'Verifying...';
-
-      try {
-        const res = await fetch('/api/admin/list-licenses', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ adminSecret: pin })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          activeAdminSecret = pin;
-          if (adminAuthSection) adminAuthSection.style.display = 'none';
-          if (adminDashSection) adminDashSection.style.display = 'block';
-          loadAdminLicenses();
-        } else {
-          if (adminAuthError) {
-            adminAuthError.textContent = 'Invalid Admin Secret.';
-            adminAuthError.style.display = 'block';
-          }
-        }
-      } catch {
-        if (adminAuthError) {
-          adminAuthError.textContent = 'Could not connect to server.';
-          adminAuthError.style.display = 'block';
-        }
-      } finally {
-        btnAdminUnlock.disabled = false;
-        btnAdminUnlock.textContent = 'Unlock Vault';
-      }
-    });
-  }
-
-  if (btnAdminRefreshLicenses) btnAdminRefreshLicenses.addEventListener('click', loadAdminLicenses);
-
-  if (btnAdminGenerateKey) {
-    btnAdminGenerateKey.addEventListener('click', async () => {
-      const name = adminNewBuyer.value.trim() || 'Valued Customer';
-      const email = adminNewEmail.value.trim() || 'client@example.com';
-      const tier = adminNewTier.value;
-
-      btnAdminGenerateKey.disabled = true;
-      btnAdminGenerateKey.textContent = 'Generating...';
-
-      try {
-        const res = await fetch('/api/admin/create-license', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ adminSecret: activeAdminSecret, buyerName: name, buyerEmail: email, tier })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          const magicLink = `${window.location.origin}/?activate=${data.licenseKey}`;
-          if (adminGeneratedKeyNotice) {
-            adminGeneratedKeyNotice.innerHTML = `
-              <div style="display: flex; flex-direction: column; gap: 6px;">
-                <div>✓ Created Key for <strong>${name}</strong>: <code style="background: #27272a; padding: 2px 6px; border-radius: 4px; color: #38bdf8; font-weight: 700;">${data.licenseKey}</code></div>
-                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 4px;">
-                  <button class="btn btn-primary btn-sm btn-admin-copy-magic" style="padding: 3px 10px; font-size: 11px;">🔗 Copy 1-Click Link</button>
-                  <button class="btn btn-outline btn-sm btn-admin-copy-raw" style="padding: 3px 10px; font-size: 11px;">📋 Copy Key</button>
-                  <span style="font-size: 10.5px; color: var(--text-muted);">Send 1-Click Link to buyer for instant device lock!</span>
-                </div>
-              </div>
-            `;
-            adminGeneratedKeyNotice.style.display = 'block';
-
-            adminGeneratedKeyNotice.querySelector('.btn-admin-copy-magic').addEventListener('click', () => {
-              navigator.clipboard.writeText(magicLink);
-              showToast('✓ 1-Click Customer Link Copied!');
-            });
-            adminGeneratedKeyNotice.querySelector('.btn-admin-copy-raw').addEventListener('click', () => {
-              navigator.clipboard.writeText(data.licenseKey);
-              showToast('✓ License Key Copied!');
-            });
-          }
-          navigator.clipboard.writeText(magicLink);
-          showToast(`✓ Generated & Copied 1-Click Link for ${name}!`);
-          adminNewBuyer.value = '';
-          adminNewEmail.value = '';
-          loadAdminLicenses();
-        }
-      } catch (e) {
-        showToast('Failed to generate key', true);
-      } finally {
-        btnAdminGenerateKey.disabled = false;
-        btnAdminGenerateKey.textContent = '+ Issue Key';
-      }
-    });
-  }
 
   // Show Toast
   function showToast(msg, isError = false) {
@@ -839,7 +590,15 @@
     const loc = inputLocation.value.trim() || 'Remote';
     const remote = selectRemote.value;
     const portal = selectPortal ? selectPortal.value : 'all';
-    const limit = selectLimit.value;
+    
+    const freeState = getWebFreemium();
+    let limitVal = parseInt(selectLimit.value, 10) || 5;
+    if (!freeState.isPro && limitVal > 5) {
+      openWebUpgradeModal('Unlock 30 to 100+ Live Jobs with Pro Access!');
+      limitVal = 5;
+      selectLimit.value = '5';
+    }
+    const limit = limitVal;
 
     searchLoading.style.display = 'block';
     jobsGrid.innerHTML = '';
@@ -847,7 +606,6 @@
     btnRunSearch.disabled = true;
 
     try {
-      const freeState = getWebFreemium();
       const devId = getOrGenerateDeviceId();
       const url = `/api/search?q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}&remote=${remote}&portal=${portal}&limit=${limit}${isInitialBoot ? '&boot=true' : ''}`;
       const res = await fetch(url, {
@@ -905,7 +663,10 @@
       return;
     }
 
-    jobs.forEach(item => {
+    const freeState = getWebFreemium();
+    const displayedJobs = !freeState.isPro ? jobs.slice(0, 5) : jobs;
+
+    displayedJobs.forEach(item => {
       const card = document.createElement('div');
       card.className = 'job-card-item';
 
@@ -992,6 +753,24 @@
 
       jobsGrid.appendChild(card);
     });
+
+    // Pro Locked Roles Teaser Card for Free Users
+    if (!freeState.isPro && jobs.length >= 5) {
+      const lockCard = document.createElement('div');
+      lockCard.className = 'job-card-item pro-locked-card';
+      lockCard.innerHTML = `
+        <div class="pro-lock-badge">🔒 25+ MORE HIGH-MATCH ROLES HIDDEN</div>
+        <h4 style="font-size: 16px; font-weight: 800; color: #fff; margin: 10px 0 6px 0;">Unlock Full Daily Job Feed</h4>
+        <p style="font-size: 12.5px; color: var(--text-dim); margin-bottom: 16px; max-width: 520px;">Free preview displays top 5 roles. Pro members unlock all 30 to 100+ daily scraped tech jobs with direct unauthenticated company apply URLs, salary benchmarks, and 1-click ATS resumes.</p>
+        <button type="button" class="btn btn-pro-upgrade" id="btnUnlockGridRoles" style="padding: 10px 24px; font-size: 13px;">
+          Unlock All Jobs — ₹799 Lifetime Pass
+        </button>
+      `;
+      lockCard.querySelector('#btnUnlockGridRoles').addEventListener('click', () => {
+        openWebUpgradeModal('Unlock all 30 to 100+ daily scraped jobs with Pro Access!');
+      });
+      jobsGrid.appendChild(lockCard);
+    }
   }
 
   // 2. Load Single Job Details
@@ -1291,9 +1070,9 @@
     btnRegenerateAi.textContent = '⏳ Generating Cover Letter...';
 
     const prof = candidateProfile || {
-      fullName: 'Aman Rajbhar',
-      skills: 'Python, PyTorch, LLMs, RAG, FastAPI, Docker, Kubernetes',
-      achievements: 'Architected high-throughput AI document indexing engine.'
+      fullName: '',
+      skills: '',
+      achievements: ''
     };
 
     try {
@@ -1349,7 +1128,7 @@
     const text = `
 ${cvName.textContent}
 ${cvContact.textContent}
-linkedin.com/in/aman-rajbhar • github.com/aman-rajbhar
+${candidateProfile?.linkedin || 'linkedin.com/in/candidate'} • ${candidateProfile?.github || 'github.com/candidate'}
 
 PROFESSIONAL SUMMARY:
 ${cvSummary.textContent.trim()}
@@ -1818,6 +1597,23 @@ ${candidateProfile?.achievements || ''}
   });
 
   // 8. Profile Vault Management & Auto-Enrichment (/setup & /expand)
+  const profileSetupBanner = document.getElementById('profileSetupBanner');
+  const btnNudgeSetupProfile = document.getElementById('btnNudgeSetupProfile');
+  if (btnNudgeSetupProfile) {
+    btnNudgeSetupProfile.addEventListener('click', () => {
+      switchTab('tabProfile');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (profFullName) profFullName.focus();
+    });
+  }
+
+  const btnTutorialDownloadExt = document.getElementById('btnTutorialDownloadExt');
+  if (btnTutorialDownloadExt) {
+    btnTutorialDownloadExt.addEventListener('click', () => {
+      if (extInstallModal) extInstallModal.style.display = 'flex';
+    });
+  }
+
   async function loadProfile() {
     try {
       const res = await fetch('/api/profile');
@@ -1830,9 +1626,17 @@ ${candidateProfile?.achievements || ''}
       profSkills.value = candidateProfile.skills || '';
       profAchievements.value = candidateProfile.achievements || '';
 
-      cvName.textContent = candidateProfile.fullName;
-      cvContact.textContent = `${candidateProfile.location} • ${candidateProfile.email} • ${candidateProfile.phone}`;
-      cvSkills.innerHTML = `<strong>Technical Stack:</strong> ${candidateProfile.skills}`;
+      cvName.textContent = candidateProfile.fullName || 'Candidate Name';
+      cvContact.textContent = `${candidateProfile.location || 'Location'} • ${candidateProfile.email || 'candidate@example.com'} • ${candidateProfile.phone || ''}`;
+      cvSkills.innerHTML = `<strong>Technical Stack:</strong> ${candidateProfile.skills || 'Add competencies in Profile Vault'}`;
+
+      if (profileSetupBanner) {
+        if (candidateProfile.fullName && candidateProfile.skills) {
+          profileSetupBanner.style.display = 'none';
+        } else {
+          profileSetupBanner.style.display = 'block';
+        }
+      }
     } catch (e) {
       showToast('Could not load profile', true);
     }
@@ -1858,8 +1662,12 @@ ${candidateProfile?.achievements || ''}
         body: JSON.stringify(updated)
       });
       candidateProfile = updated;
-      cvName.textContent = updated.fullName;
-      cvContact.textContent = `${updated.location} • ${updated.email} • ${updated.phone}`;
+      cvName.textContent = updated.fullName || 'Candidate Name';
+      cvContact.textContent = `${updated.location || 'Location'} • ${updated.email || 'candidate@example.com'} • ${updated.phone || ''}`;
+      cvSkills.innerHTML = `<strong>Technical Stack:</strong> ${updated.skills || 'Add competencies in Profile Vault'}`;
+      if (profileSetupBanner && updated.fullName && updated.skills) {
+        profileSetupBanner.style.display = 'none';
+      }
       showToast('✓ Profile updated and saved to candidate_profile.json!');
     } catch (e) {
       showToast('Failed to save profile', true);

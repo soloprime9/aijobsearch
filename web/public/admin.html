@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Founder Admin Vault — Private License Console</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #07080c;
+      color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .admin-card {
+      background: rgba(14, 16, 25, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 820px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(20px);
+    }
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+    .admin-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #c084fc;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-box {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .stat-label {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-val {
+      font-size: 20px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 4px;
+      color: #fff;
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+      text-align: left;
+    }
+    .admin-table th {
+      background: #12141f;
+      padding: 8px 12px;
+      color: #94a3b8;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .admin-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-card">
+    <div class="admin-header">
+      <div class="admin-title">
+        <span>🔐</span> FOUNDER ADMIN VAULT — PRIVATE LICENSE CONSOLE
+      </div>
+      <a href="/" class="btn btn-outline btn-sm">← Back to App</a>
+    </div>
+
+    <!-- Auth Section -->
+    <div id="adminAuthSection">
+      <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">Enter Founder Admin Secret PIN to manage customer licenses, revenue, and hardware locks.</p>
+      <div style="display: flex; gap: 10px;">
+        <input type="password" id="adminSecretInput" class="input-control" placeholder="Founder Admin Secret PIN" style="font-size: 13px; max-width: 400px;">
+        <button class="btn btn-primary" id="btnAdminUnlock">Unlock Vault</button>
+      </div>
+      <div id="adminAuthError" style="display: none; color: #ef4444; font-size: 12px; margin-top: 8px;"></div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="adminDashSection" style="display: none;">
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-box" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
+          <div class="stat-label" style="color: #10b981;">Total Revenue</div>
+          <div class="stat-val" id="adminStatRevenue">₹0</div>
+        </div>
+        <div class="stat-box" style="background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.3);">
+          <div class="stat-label" style="color: #38bdf8;">Paid Licenses</div>
+          <div class="stat-val" id="adminStatSalesCount">0</div>
+        </div>
+        <div class="stat-box" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3);">
+          <div class="stat-label" style="color: #f59e0b;">Active Device Locks</div>
+          <div class="stat-val" id="adminStatLockedDevices">0</div>
+        </div>
+        <div class="stat-box" style="background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.3);">
+          <div class="stat-label" style="color: #c084fc;">Free Trial Users</div>
+          <div class="stat-val" id="adminStatTrialUsers">0</div>
+        </div>
+      </div>
+
+      <!-- Key Generator -->
+      <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+        <div style="font-size: 13px; font-weight: 700; color: #c084fc; margin-bottom: 10px;">⚡ Issue New 1-Device Hardware-Locked Key</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
+          <div>
+            <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">Customer Name</label>
+            <input type="text" id="adminNewBuyer" class="input-control" placeholder="Customer Name" style="font-size: 12px; padding: 7px 10px;">
+          </div>
+          <div>
+            <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">Email</label>
+            <input type="email" id="adminNewEmail" class="input-control" placeholder="customer@email.com" style="font-size: 12px; padding: 7px 10px;">
+          </div>
+          <div>
+            <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">Plan Tier</label>
+            <select id="adminNewTier" class="input-control select-control" style="font-size: 12px; padding: 7px 10px;">
+              <option value="lifetime_pass">₹799 Lifetime Pass (India)</option>
+              <option value="pro_monthly">₹299 Monthly (India)</option>
+              <option value="global_season">$49 Global Season Pass (US/Intl)</option>
+              <option value="global_monthly">$19 Global Monthly (US/Intl)</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="btnAdminGenerateKey" style="font-size: 12px; padding: 8px 16px; white-space: nowrap;">+ Issue Key</button>
+        </div>
+        <div id="adminGeneratedKeyNotice" style="display: none; margin-top: 10px; font-size: 12.5px; font-weight: 700; color: #10b981;"></div>
+      </div>
+
+      <!-- Keys Table -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span style="font-size: 13px; font-weight: 700; color: #fff;">Registered Licenses & Device Locks</span>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-outline btn-sm" id="btnAdminExportCsv" style="color: #10b981; border-color: rgba(16, 185, 129, 0.4);">📥 Export CSV</button>
+          <button class="btn btn-outline btn-sm" id="btnAdminRefreshLicenses">↻ Refresh</button>
+        </div>
+      </div>
+      <div style="max-height: 320px; overflow-y: auto; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>License Key</th>
+              <th>Buyer</th>
+              <th>Tier</th>
+              <th>Device Lock</th>
+              <th>Status</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="adminLicensesTableBody">
+            <!-- Injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const secretInput = document.getElementById('adminSecretInput');
+    const btnUnlock = document.getElementById('btnAdminUnlock');
+    const authErr = document.getElementById('adminAuthError');
+    const authSec = document.getElementById('adminAuthSection');
+    const dashSec = document.getElementById('adminDashSection');
+    const statRev = document.getElementById('adminStatRevenue');
+    const statSales = document.getElementById('adminStatSalesCount');
+    const statLocks = document.getElementById('adminStatLockedDevices');
+    const statTrials = document.getElementById('adminStatTrialUsers');
+    const tableBody = document.getElementById('adminLicensesTableBody');
+    const btnGen = document.getElementById('btnAdminGenerateKey');
+    const genNotice = document.getElementById('adminGeneratedKeyNotice');
+    const btnRefresh = document.getElementById('btnAdminRefreshLicenses');
+    const btnExport = document.getElementById('btnAdminExportCsv');
+
+    let adminSecret = '';
+
+    btnUnlock.addEventListener('click', async () => {
+      const secret = secretInput.value.trim();
+      if (!secret) return;
+      authErr.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/admin/licenses', {
+          headers: { 'x-admin-secret': secret }
+        });
+        if (res.status === 401 || res.status === 403) {
+          authErr.textContent = 'Invalid Founder Admin PIN!';
+          authErr.style.display = 'block';
+          return;
+        }
+        const data = await res.json();
+        adminSecret = secret;
+        authSec.style.display = 'none';
+        dashSec.style.display = 'block';
+        renderAdminDashboard(data);
+      } catch (e) {
+        authErr.textContent = 'Server connection error';
+        authErr.style.display = 'block';
+      }
+    });
+
+    function renderAdminDashboard(data) {
+      statRev.textContent = data.stats.formattedRevenue || '₹0';
+      statSales.textContent = data.stats.paidSales || 0;
+      statLocks.textContent = data.stats.totalLockedDevices || 0;
+      statTrials.textContent = data.stats.trialUsers || 0;
+
+      tableBody.innerHTML = '';
+      (data.licenses || []).forEach(lic => {
+        const tr = document.createElement('tr');
+        const lockText = lic.activeDevices && lic.activeDevices.length > 0 
+          ? `<span style="color: #10b981;">🔒 ${lic.activeDevices[0].deviceId.slice(0, 16)}...</span>` 
+          : '<span style="color: #94a3b8;">Unbound</span>';
+
+        tr.innerHTML = `
+          <td style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #c084fc;">${lic.key}</td>
+          <td><strong>${lic.buyer || 'Unknown'}</strong><br><span style="color: #64748b; font-size: 10.5px;">${lic.email || ''}</span></td>
+          <td><span style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">${lic.tier}</span></td>
+          <td>${lockText}</td>
+          <td><span style="color: #34d399;">● ${lic.status}</span></td>
+          <td style="text-align: right;">
+            <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${lic.key}'); alert('Copied key: ' + '${lic.key}');" style="padding: 2px 8px; font-size: 11px;">Copy</button>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    btnGen.addEventListener('click', async () => {
+      const buyer = document.getElementById('adminNewBuyer').value.trim();
+      const email = document.getElementById('adminNewEmail').value.trim();
+      const tier = document.getElementById('adminNewTier').value;
+
+      if (!buyer || !email) {
+        alert('Please enter Buyer Name and Email');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin/issue-license', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-secret': adminSecret
+          },
+          body: JSON.stringify({ buyer, email, tier })
+        });
+        const data = await res.json();
+        genNotice.textContent = `✓ Issued Key: ${data.key} for ${buyer}`;
+        genNotice.style.display = 'block';
+        navigator.clipboard.writeText(data.key);
+        refreshLicenses();
+      } catch {
+        alert('Failed to issue key');
+      }
+    });
+
+    async function refreshLicenses() {
+      try {
+        const res = await fetch('/api/admin/licenses', {
+          headers: { 'x-admin-secret': adminSecret }
+        });
+        const data = await res.json();
+        renderAdminDashboard(data);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    btnRefresh.addEventListener('click', refreshLicenses);
+
+    btnExport.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/admin/licenses', {
+          headers: { 'x-admin-secret': adminSecret }
+        });
+        const data = await res.json();
+        const rows = data.licenses || [];
+        let csv = 'Key,Buyer,Email,Tier,Status,DeviceLock,CreatedAt\n';
+        rows.forEach(r => {
+          const dev = r.activeDevices && r.activeDevices[0] ? r.activeDevices[0].deviceId : 'none';
+          csv += `"${r.key}","${r.buyer}","${r.email}","${r.tier}","${r.status}","${dev}","${r.createdAt}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `jobcopilot-licenses-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+      } catch {
+        alert('Export failed');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin.html
+Disallow: /api/
+Disallow: /data/
+Disallow: /license_vault.json
+Disallow: /candidate_profile.json

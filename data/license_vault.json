@@ -56,13 +56,13 @@
       "status": "active"
     },
     "PRO-15A444-0BFCFB": {
-      "buyer": "Aman Sharma",
-      "email": "aman@sharma.in",
+      "buyer": "Verified Pro Member",
+      "email": "member@copilot.pro",
       "tier": "lifetime_pass",
       "maxDevices": 1,
       "activeDevices": [
         {
-          "deviceId": "DEV-LAPTOP-AMAN-001",
+          "deviceId": "DEV-BROWSER-AUTH-001",
           "platform": "Web Studio",
           "activatedAt": "2026-10-23T01:29:21.487Z"
         }
