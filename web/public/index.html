@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Copilot Studio — Autonomous Career Intelligence Suite</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Top Navigation Header -->
+    <header class="navbar">
+      <div class="nav-container">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+          </div>
+          <div>
+            <div class="brand-title">JOB COPILOT <span class="badge-pro">STUDIO</span></div>
+            <div class="brand-subtitle">Autonomous Career Intelligence & Full Lifecycle Suite</div>
+          </div>
+        </div>
+
+        <nav class="nav-links">
+          <button class="nav-btn active" data-tab="tabSearch">
+            <span class="icon">🔍</span> Job Radar
+          </button>
+          <button class="nav-btn" data-tab="tabDetail">
+            <span class="icon">🎯</span> Fit Analyzer
+          </button>
+          <button class="nav-btn" data-tab="tabCV">
+            <span class="icon">📄</span> ATS Resume & Letter
+          </button>
+          <button class="nav-btn" data-tab="tabInterview">
+            <span class="icon">💡</span> Interview Studio
+          </button>
+          <button class="nav-btn" data-tab="tabUpskill">
+            <span class="icon">🧠</span> Upskill Hub
+          </button>
+          <button class="nav-btn" data-tab="tabTracker">
+            <span class="icon">📈</span> Pipeline Tracker
+          </button>
+          <button class="nav-btn" data-tab="tabProfile">
+            <span class="icon">👤</span> Profile Vault
+          </button>
+        </nav>
+
+        <div class="nav-status">
+          <div class="credit-pill" id="webCreditPill" title="Your remaining free trial credits" style="display: flex; align-items: center; gap: 6px; background: rgba(39, 39, 42, 0.6); padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border-color); font-size: 11.5px; margin-right: 10px;">
+            <span class="sparkle" style="color: #fbbf24;">⚡</span>
+            <span id="webScansCount" style="color: #38bdf8; font-weight: 700;">3</span> <span style="color: var(--text-muted); font-size: 11px;">Scans</span>
+            <span style="color: var(--text-muted); font-size: 10px;">•</span>
+            <span id="webCvCount" style="color: #38bdf8; font-weight: 700;">1</span> <span style="color: var(--text-muted); font-size: 11px;">CV</span>
+          </div>
+          <button class="btn btn-warning btn-sm" id="btnWebUpgrade" style="font-weight: 700; display: flex; align-items: center; gap: 4px; padding: 5px 12px; border-radius: 6px;">
+            👑 Upgrade Pro
+          </button>
+          <button class="btn btn-outline btn-sm" id="btnOpenExtModal" style="display: flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 6px; color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); font-size: 11.5px; font-weight: 600; margin-left: 6px;" title="Install Chrome Extension for LinkedIn & Naukri">
+            🧩 Get Extension
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Global Toast Banner -->
+    <div id="toast" class="toast-banner" style="display: none;"></div>
+
+    <!-- Freemium Upgrade Modal -->
+    <div id="webUpgradeModal" class="modal-overlay" style="display: none;">
+      <div class="modal-card upgrade-modal-card" style="max-width: 460px;">
+        <div class="card-toolbar">
+          <div style="font-size: 11px; font-weight: 800; color: #fbbf24; letter-spacing: 0.5px;">👑 UNLOCK UNLIMITED PRO SUITE</div>
+          <button class="btn btn-outline btn-sm" id="btnCloseWebUpgradeModal">✕ Close</button>
+        </div>
+        <h3 class="upgrade-title" style="margin-top: 10px; font-size: 17px; font-weight: 700; color: #fff;">Accelerate Your Career with Pro</h3>
+        <p class="subtitle" id="webUpgradeReason" style="font-size: 11.5px; color: var(--text-secondary); margin-bottom: 12px;">Free trial exhausted. Unlock unlimited live aggregator scans, AI evaluation, and tailored ATS documents.</p>
+
+        <div style="margin: 12px 0; background: rgba(24, 24, 27, 0.6); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-size: 12px; color: var(--text-primary);"><span style="color: #10b981; font-weight: bold;">✓</span> <strong>Unlimited Multi-Portal Scans</strong> (LinkedIn, Internshala, Google for Jobs)</div>
+          <div style="font-size: 12px; color: var(--text-primary);"><span style="color: #10b981; font-weight: bold;">✓</span> <strong>Unlimited Tailored ATS CVs</strong> & Cover Letters</div>
+          <div style="font-size: 12px; color: var(--text-primary);"><span style="color: #10b981; font-weight: bold;">✓</span> <strong>AmbitionBox™ Salary Insights</strong> (Real CTC bands, 4.2★ reviews & WLB)</div>
+          <div style="font-size: 12px; color: var(--text-primary);"><span style="color: #10b981; font-weight: bold;">✓</span> <strong>Automated Anti-Fraud Shield</strong> (Blocks upfront fee scams & fake jobs)</div>
+        </div>
+
+        <!-- Dynamic Currency & Region Switcher -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div style="font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
+            <span>Detected Location:</span>
+            <strong id="displayDetectedRegion" style="color: #38bdf8;">🇮🇳 India (INR)</strong>
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn btn-outline btn-sm" id="btnSwitchToInr" style="padding: 2px 8px; font-size: 10px; font-weight: 700;">🇮🇳 ₹ INR</button>
+            <button class="btn btn-outline btn-sm" id="btnSwitchToUsd" style="padding: 2px 8px; font-size: 10px; font-weight: 700;">🌍 $ USD</button>
+          </div>
+        </div>
+
+        <!-- Plan Selector (India vs Global) -->
+        <div id="pricingContainer" style="margin-bottom: 12px;">
+          <!-- India Plans -->
+          <div id="indiaPlanCard">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+              <div id="planInrLifetime" class="plan-select-pill active" style="background: rgba(245, 158, 11, 0.15); border: 2px solid #f59e0b; border-radius: 8px; padding: 10px; cursor: pointer; text-align: center;">
+                <div style="font-size: 10px; font-weight: 800; color: #fbbf24; text-transform: uppercase;">Most Popular</div>
+                <div style="font-size: 18px; font-weight: 800; color: #fff;">₹799</div>
+                <div style="font-size: 11px; color: #10b981; font-weight: 600;">Lifetime Pass</div>
+                <div style="font-size: 9.5px; color: var(--text-muted);">One-time payment</div>
+              </div>
+              <div id="planInrMonthly" class="plan-select-pill" style="background: #18181b; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; cursor: pointer; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Flexible</div>
+                <div style="font-size: 18px; font-weight: 800; color: #fff;">₹299</div>
+                <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600;">1 Month Pass</div>
+                <div style="font-size: 9.5px; color: var(--text-muted);">Monthly recharge</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Global Plans (Shown for Foreigners) -->
+          <div id="globalPlanCard" style="display: none;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+              <div id="planUsdLifetime" class="plan-select-pill active" style="background: rgba(56, 189, 248, 0.15); border: 2px solid #38bdf8; border-radius: 8px; padding: 10px; cursor: pointer; text-align: center;">
+                <div style="font-size: 10px; font-weight: 800; color: #38bdf8; text-transform: uppercase;">Best Value</div>
+                <div style="font-size: 18px; font-weight: 800; color: #fff;">$49</div>
+                <div style="font-size: 11px; color: #10b981; font-weight: 600;">Full Season Pass</div>
+                <div style="font-size: 9.5px; color: var(--text-muted);">6 Months Unlimited</div>
+              </div>
+              <div id="planUsdMonthly" class="plan-select-pill" style="background: #18181b; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; cursor: pointer; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Standard</div>
+                <div style="font-size: 18px; font-weight: 800; color: #fff;">$19</div>
+                <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600;">Monthly Pass</div>
+                <div style="font-size: 9.5px; color: var(--text-muted);">Cancel anytime</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Method Tabs -->
+        <div style="display: flex; gap: 4px; margin-bottom: 12px; background: rgba(0,0,0,0.4); padding: 4px; border-radius: 8px; border: 1px solid var(--border-color); overflow-x: auto;">
+          <button type="button" class="btn-pay-tab active" data-tab="tabPayUpi" style="flex: 1; padding: 5px 8px; font-size: 10.5px; font-weight: 700; border-radius: 6px; border: none; background: #f59e0b; color: #000; cursor: pointer; white-space: nowrap;">📲 UPI QR Code</button>
+          <button type="button" class="btn-pay-tab" data-tab="tabPayBank" style="flex: 1; padding: 5px 8px; font-size: 10.5px; font-weight: 700; border-radius: 6px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; white-space: nowrap;">🏦 NetBanking / NEFT</button>
+          <button type="button" class="btn-pay-tab" data-tab="tabPayCard" style="flex: 1; padding: 5px 8px; font-size: 10.5px; font-weight: 700; border-radius: 6px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; white-space: nowrap;">💳 Card / PayPal</button>
+          <button type="button" class="btn-pay-tab" data-tab="tabPayCrypto" style="flex: 1; padding: 5px 8px; font-size: 10.5px; font-weight: 700; border-radius: 6px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; white-space: nowrap;">💎 USDT Crypto</button>
+        </div>
+
+        <!-- Tab 1: Direct Real UPI QR Code -->
+        <div id="tabPayUpi" class="pay-method-view" style="display: block; background: #18181b; border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 8px; padding: 14px; text-align: center; margin-bottom: 12px;">
+          <div style="font-size: 12px; font-weight: 700; color: #fbbf24; margin-bottom: 2px;">⚡ Scan UPI QR Code with PhonePe, GPay, or Paytm</div>
+          <p style="font-size: 10.5px; color: var(--text-muted); margin-bottom: 10px;">Amount: <strong id="displayQrAmountText" style="color: #fff; font-size: 12px;">₹799 (Lifetime Pass)</strong></p>
+          
+          <!-- Real QR Code Container -->
+          <div style="display: inline-block; background: #fff; padding: 8px; border-radius: 10px; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2); margin-bottom: 10px;">
+            <img id="upiRealQrImage" src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=upi%3A%2F%2Fpay%3Fpa%3Dsoloprime%40upi%26pn%3DSoloPrime%26am%3D799%26cu%3DINR%26tn%3DJobCopilotProLifetime" alt="UPI QR Code" style="width: 170px; height: 170px; display: block;">
+          </div>
+          
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 6px;">
+            <span style="font-size: 11px; color: var(--text-muted);">UPI ID:</span>
+            <strong style="color: #38bdf8; font-size: 12px; font-family: monospace;">soloprime@upi</strong>
+            <button class="btn btn-outline btn-sm" id="btnWebCopyUpi" style="padding: 2px 8px; font-size: 10px;">Copy</button>
+          </div>
+          <div style="font-size: 10px; color: #a1a1aa;">Accepted: PhonePe • Google Pay • Paytm • BHIM • Cred • Amazon Pay</div>
+        </div>
+
+        <!-- Tab 2: Bank Transfer / NEFT / IMPS -->
+        <div id="tabPayBank" class="pay-method-view" style="display: none; background: #18181b; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; margin-bottom: 12px;">
+          <div style="font-size: 12px; font-weight: 700; color: #38bdf8; margin-bottom: 6px;">🏦 Direct Bank Account Transfer (IMPS / NEFT)</div>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;">
+            <div style="display: flex; justify-content: space-between;"><span>Account Name:</span> <strong style="color: #fff;">SoloPrime Career Technologies</strong></div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Account Number:</span> 
+              <div><strong style="color: #fff; font-family: monospace;">50100492817291</strong> <button class="btn btn-outline btn-sm btn-copy-prop" data-text="50100492817291" style="padding: 1px 6px; font-size: 9px;">Copy</button></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span>IFSC Code:</span> 
+              <div><strong style="color: #38bdf8; font-family: monospace;">HDFC0001234</strong> <button class="btn btn-outline btn-sm btn-copy-prop" data-text="HDFC0001234" style="padding: 1px 6px; font-size: 9px;">Copy</button></div>
+            </div>
+            <div style="display: flex; justify-content: space-between;"><span>Bank Name:</span> <span style="color: #a1a1aa;">HDFC Bank / Current Account</span></div>
+          </div>
+          <p style="font-size: 10px; color: var(--text-muted); margin-top: 6px; margin-bottom: 0;">Transfer ₹299 or ₹799 via NetBanking, then enter the UTR / Ref number below.</p>
+        </div>
+
+        <!-- Tab 3: Cards & PayPal (Global) -->
+        <div id="tabPayCard" class="pay-method-view" style="display: none; background: #18181b; border: 1px solid #38bdf8; border-radius: 8px; padding: 14px; text-align: center; margin-bottom: 12px;">
+          <div style="font-size: 12px; font-weight: 700; color: #38bdf8; margin-bottom: 4px;">💳 International Credit / Debit Cards & PayPal</div>
+          <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Instant worldwide checkout. All cards (Visa, MasterCard, Amex) and PayPal accepted.</p>
+          <button class="btn btn-secondary" id="btnWebPayCard" style="font-weight: 700; width: 100%; font-size: 12.5px; padding: 10px; margin-bottom: 8px;">💳 Pay with Card / PayPal Checkout ↗</button>
+          <div style="font-size: 10px; color: var(--text-muted);">Encrypted 256-bit checkout • Instant key issuance</div>
+        </div>
+
+        <!-- Tab 4: Crypto USDT Payments -->
+        <div id="tabPayCrypto" class="pay-method-view" style="display: none; background: #18181b; border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 8px; padding: 14px; margin-bottom: 12px;">
+          <div style="font-size: 12px; font-weight: 700; color: #10b981; margin-bottom: 4px;">💎 USDT Crypto Payments (Zero Forex Fees)</div>
+          <p style="font-size: 10.5px; color: var(--text-muted); margin-bottom: 8px;">Popular with tech freelancers and international remote engineers.</p>
+          <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; margin-bottom: 6px; font-size: 11px;">
+            <div style="font-size: 10px; color: #10b981; font-weight: 700; margin-bottom: 2px;">USDT (TRC-20 Network):</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 4px;">
+              <code style="color: #fff; font-size: 10px; word-break: break-all;">TLy1K9vQ4Z3yN8P7jX6wB5mC2dE1fG9hK4</code>
+              <button class="btn btn-outline btn-sm btn-copy-prop" data-text="TLy1K9vQ4Z3yN8P7jX6wB5mC2dE1fG9hK4" style="padding: 2px 6px; font-size: 9px; white-space: nowrap;">Copy</button>
+            </div>
+          </div>
+          <p style="font-size: 10px; color: var(--text-muted); margin: 0;">Send 10 USDT (Monthly) or 25 USDT (Lifetime), then enter your TxID below.</p>
+        </div>
+
+        <!-- Universal Activation Box -->
+        <div style="background: rgba(24, 24, 27, 0.85); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+          <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 6px;">
+            Have a <strong>License Key</strong>, <strong>UPI UTR / Bank Ref</strong>, or <strong>Founder Admin PIN</strong>?
+          </label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="webActivationInput" placeholder="Enter key (e.g. PRO-XXXX, UTR, or PIN)" class="input-control" style="font-size: 12px; padding: 7px 10px;">
+            <button class="btn btn-primary btn-sm" id="btnWebActivateKey" style="white-space: nowrap; font-size: 11.5px; padding: 7px 14px;">Unlock Pro</button>
+          </div>
+          <div id="webActivationStatus" style="display: none; margin-top: 8px; font-size: 11.5px; font-weight: 600;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Communication Note Modal (/outcome followup & thank you) -->
+    <div id="followupModal" class="modal-overlay" style="display: none;">
+      <div class="modal-card">
+        <div class="card-toolbar">
+          <h3 id="followupModalTitle">Draft Communication Note</h3>
+          <button class="btn btn-outline btn-sm" id="btnCloseFollowupModal">✕ Close</button>
+        </div>
+        <p class="subtitle" id="followupModalSubtitle">Targeted, polite, and anti-cliché message ready to send.</p>
+        <div style="margin-top: 14px;">
+          <input type="text" id="followupSubject" class="input-control" style="margin-bottom: 10px; font-weight: 600;" readonly>
+          <textarea id="followupBody" class="input-control textarea-control" rows="12" style="font-family: var(--font-sans); font-size: 13.5px;"></textarea>
+        </div>
+        <div style="margin-top: 14px; display: flex; justify-content: flex-end; gap: 10px;">
+          <button class="btn btn-secondary" id="btnCopyFollowupNote">📋 Copy to Clipboard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="main-body">
+
+      <!-- =================================================================== -->
+      <!-- TAB 1: JOB RADAR (Live Search & Ranked Results) -->
+      <!-- =================================================================== -->
+      <section class="tab-pane active" id="tabSearch">
+        <div class="search-hero">
+          <div class="hero-header">
+            <h2>Live Job Radar & Precision Fit Scanner</h2>
+            <p>Direct unauthenticated public search engine with instant 1-to-5 candidate fit calibration</p>
+          </div>
+
+          <form id="searchForm" class="search-form-card">
+            <div class="form-grid">
+              <div class="input-group">
+                <label>Job Title / Keyword</label>
+                <input type="text" id="inputQuery" class="input-control" value="AI Engineer" placeholder="e.g. AI Engineer, Full Stack, Python">
+              </div>
+              <div class="input-group">
+                <label>Location</label>
+                <input type="text" id="inputLocation" class="input-control" value="Remote" placeholder="e.g. Remote, Bengaluru, Noida, USA">
+              </div>
+              <div class="input-group">
+                <label>Workplace Type</label>
+                <select id="selectRemote" class="input-control select-control">
+                  <option value="all">All Modes</option>
+                  <option value="remote" selected>Remote</option>
+                  <option value="hybrid">Hybrid</option>
+                  <option value="onsite">On-site</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label>Job Portal / Source</label>
+                <select id="selectPortal" class="input-control select-control">
+                  <option value="all" selected>🌐 All Sources (Aggregated)</option>
+                  <option value="internshala">🇮🇳 Internshala & Indian Tech Hub</option>
+                  <option value="googlejobs">🔍 Google for Jobs (Schema-Verified)</option>
+                  <option value="linkedin">💼 LinkedIn Global</option>
+                  <option value="freehire">🚀 FreeHire ATS (50+ Boards)</option>
+                  <option value="arbeitnow">🌍 Arbeitnow Remote Tech</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label>Results Limit</label>
+                <select id="selectLimit" class="input-control select-control">
+                  <option value="10">10 Jobs</option>
+                  <option value="20">20 Jobs</option>
+                  <option value="30" selected>30 Jobs</option>
+                  <option value="50">50 Jobs</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-footer">
+              <div class="quick-tags">
+                <span class="tag-label">Presets:</span>
+                <button type="button" class="btn-tag" data-q="AI Engineer" data-loc="Remote">AI Engineer</button>
+                <button type="button" class="btn-tag" data-q="Machine Learning Engineer" data-loc="Bengaluru">ML Engineer</button>
+                <button type="button" class="btn-tag" data-q="Generative AI Developer" data-loc="Remote">GenAI Dev</button>
+                <button type="button" class="btn-tag" data-q="Python Backend Engineer" data-loc="Remote">Python Backend</button>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn btn-secondary" id="btnOpenPasteModal">
+                  📋 Paste Custom Job
+                </button>
+                <button type="submit" class="btn btn-primary" id="btnRunSearch">
+                  ⚡ Search & Rank
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Search Results Grid -->
+        <div class="results-container">
+          <div class="results-header">
+            <div class="results-title-group">
+              <h3 id="resultsTitle">Evaluated Opportunities</h3>
+              <span class="counter-badge" id="resultsCount">Ready to search</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <button type="button" class="btn btn-secondary btn-sm" id="btnExportCsv" title="Export current ranked shortlist to CSV">
+                📥 Export CSV
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnExportJson" title="Export current ranked shortlist to JSON">
+                📥 Export JSON
+              </button>
+              <div class="direct-id-box">
+                <input type="text" id="directJobId" placeholder="Or enter Job ID / URL">
+                <button type="button" class="btn btn-secondary btn-sm" id="btnLoadDirectId">Inspect</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div id="searchLoading" class="loading-state" style="display: none;">
+            <div class="spinner"></div>
+            <p>Scanning live job listings and calculating candidate fit scores...</p>
+          </div>
+
+          <!-- Job Cards Grid -->
+          <div class="jobs-grid" id="jobsGrid">
+            <!-- Injected by JavaScript -->
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 2: FIT & SALARY ANALYZER (Detailed Breakdown + Custom Paste) -->
+      <!-- =================================================================== -->
+      <section class="tab-pane" id="tabDetail" style="display: none;">
+        <div class="detail-layout">
+          <!-- Left Column: Detailed Job View -->
+          <div class="detail-main">
+            <!-- Custom Job Paste Toggle Banner -->
+            <div class="card custom-paste-card" id="customPasteCard" style="display: none; margin-bottom: 20px;">
+              <div class="card-toolbar">
+                <h3>📋 Analyze Any Custom Job (Paste from Any Website)</h3>
+                <button class="btn btn-outline btn-sm" id="btnCloseCustomPaste">✕ Close</button>
+              </div>
+              <p class="subtitle" style="margin-bottom: 14px;">Found a job on LinkedIn, Indeed, Naukri, or a company career page? Paste it here to score candidate fit, benchmark salary, and generate tailored application materials.</p>
+              
+              <div class="form-grid" style="margin-bottom: 12px;">
+                <div class="input-group">
+                  <label>Role Title</label>
+                  <input type="text" id="customTitle" class="input-control" placeholder="e.g. Lead Generative AI Engineer">
+                </div>
+                <div class="input-group">
+                  <label>Company Name</label>
+                  <input type="text" id="customCompany" class="input-control" placeholder="e.g. Anthropic, Google, Startup">
+                </div>
+                <div class="input-group">
+                  <label>Location</label>
+                  <input type="text" id="customLocation" class="input-control" placeholder="e.g. Remote / Bengaluru">
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label>Job Description & Requirements</label>
+                <textarea id="customDesc" class="input-control textarea-control" rows="6" placeholder="Paste full job description, qualifications, and tech stack here..."></textarea>
+              </div>
+
+              <div style="margin-top: 14px; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn btn-primary" id="btnSubmitCustomJob">
+                  ⚡ Evaluate Custom Job Fit
+                </button>
+              </div>
+            </div>
+
+            <div class="card detail-header-card">
+              <div class="detail-badge-row">
+                <span class="tag-badge" id="detSeniority">Entry Level</span>
+                <span class="tag-badge" id="detEmployment">Full-time</span>
+                <span class="tag-badge" id="detIndustries">Artificial Intelligence</span>
+                <span class="status-pill active" id="detStatus">● Active Posting</span>
+              </div>
+              <h1 class="det-title" id="detTitle">AI Engineer – LLMs & RAG Architectures</h1>
+              <div class="det-meta">
+                <span class="comp-name" id="detCompany">Scale AI</span>
+                <span class="dot">•</span>
+                <span class="loc-name" id="detLocation">Remote (Global)</span>
+              </div>
+              <div class="det-actions">
+                <button class="btn btn-primary" id="btnTailorFromDetail">
+                  ⚡ 1-Click Tailor ATS Resume & Cover Letter
+                </button>
+                <button class="btn btn-secondary" id="btnInterviewFromDetail">
+                  💡 Prepare Interview Q&A
+                </button>
+                <button class="btn btn-secondary" id="btnTrackFromDetail">
+                  💾 Add to Tracker
+                </button>
+                <a href="#" target="_blank" class="btn btn-outline" id="detLiveUrl">
+                  ↗ Open Live Posting
+                </a>
+              </div>
+            </div>
+
+            <!-- Job Description Card -->
+            <div class="card desc-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3>Role Overview & Requirements</h3>
+                <button class="btn btn-outline btn-sm" id="btnTogglePasteFromDetail">
+                  + Paste Another Job
+                </button>
+              </div>
+              <div class="job-description-content" id="detDescription">
+                <!-- Injected by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Rigorous Fit Score & Salary Benchmark -->
+          <div class="detail-sidebar">
+            <!-- Overall Score Card -->
+            <div class="card score-card">
+              <div class="score-header">
+                <div>
+                  <div class="score-label">OVERALL FIT SCORE</div>
+                  <div class="score-number-row">
+                    <span class="big-score" id="detScore">4.8</span>
+                    <span class="score-max">/ 5.0</span>
+                  </div>
+                </div>
+                <div class="score-badge" id="detVerdictBadge">★ STRONG FIT</div>
+              </div>
+              <p class="score-summary" id="detVerdictSummary">
+                High alignment! Candidate profile matches the tech stack and tools required.
+              </p>
+
+              <div class="metrics-block">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+                  Evaluation Dimensions (/rank Framework)
+                </div>
+                <div class="metric-row">
+                  <span class="m-label">1. Technical Competence (30%)</span>
+                  <span class="m-val" id="dimTechVal">92%</span>
+                </div>
+                <div class="bar-bg"><div class="bar-fill" id="dimTechBar" style="width: 92%;"></div></div>
+
+                <div class="metric-row" style="margin-top: 8px;">
+                  <span class="m-label">2. Experience & Seniority (25%)</span>
+                  <span class="m-val" id="dimExpVal">88%</span>
+                </div>
+                <div class="bar-bg"><div class="bar-fill" id="dimExpBar" style="width: 88%;"></div></div>
+
+                <div class="metric-row" style="margin-top: 8px;">
+                  <span class="m-label">3. Behavioral & Role Impact (15%)</span>
+                  <span class="m-val" id="dimBehVal">85%</span>
+                </div>
+                <div class="bar-bg"><div class="bar-fill" id="dimBehBar" style="width: 85%;"></div></div>
+
+                <div class="metric-row" style="margin-top: 8px;">
+                  <span class="m-label">4. AI / Domain Trajectory (30%)</span>
+                  <span class="m-val" id="dimCareerVal">95%</span>
+                </div>
+                <div class="bar-bg"><div class="bar-fill" id="dimCareerBar" style="width: 95%;"></div></div>
+              </div>
+
+              <div class="chips-group">
+                <div class="chips-title text-success">✓ Verified Matching Skills</div>
+                <div class="chips-list" id="detMatchedChips">
+                  <!-- Injected by JS -->
+                </div>
+              </div>
+
+              <div class="chips-group">
+                <div class="chips-title text-warning">⚠ Potential Gap / Non-Essential</div>
+                <div class="chips-list" id="detMissingChips">
+                  <!-- Injected by JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Salary Benchmark Card -->
+            <div class="card salary-benchmark-card">
+              <div class="salary-header">
+                <h3>💰 Compensation Benchmark</h3>
+                <span class="comp-badge">Dataset 2026</span>
+              </div>
+              <div class="salary-info-rows" id="detSalaryBody">
+                <!-- Injected by JS -->
+              </div>
+
+              <!-- Interactive Salary Lookup Tool -->
+              <div class="salary-quick-search" style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-subtle);">
+                <label style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Search Any Employer Benchmark:</label>
+                <div style="display: flex; gap: 8px; margin-top: 6px;">
+                  <input type="text" id="salarySearchInput" class="input-control" placeholder="e.g. Google, Microsoft, Amazon" style="font-size: 12px; padding: 6px 10px;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnSearchSalary">Lookup</button>
+                </div>
+                <div id="salarySearchResult" style="font-size: 12px; color: var(--accent-blue); margin-top: 8px; display: none;"></div>
+              </div>
+            </div>
+
+            <!-- AmbitionBox & Employer Intelligence Card -->
+            <div class="card ambitionbox-detail-card" style="margin-top: 16px;">
+              <div class="salary-header">
+                <h3>🏢 AmbitionBox™ Insights</h3>
+                <span class="comp-badge" id="detAmbitionBadge">★ 4.2 Verified</span>
+              </div>
+              <div id="detAmbitionBoxBody" class="salary-info-rows">
+                <!-- Injected by JS -->
+              </div>
+              <div id="detAuditBadge" style="margin-top: 12px; padding: 10px; border-radius: var(--radius-sm); font-size: 11.5px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); color: #34d399;">
+                🛡️ Verified Authenticity: Zero scam triggers detected
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 3: 1-PAGE ATS RESUME & COVER LETTER SUITE -->
+      <!-- =================================================================== -->
+      <section class="tab-pane" id="tabCV" style="display: none;">
+        <div class="cv-layout">
+          <!-- Left Column: ATS Vector Resume Preview -->
+          <div class="cv-left">
+            <div class="card-toolbar">
+              <div>
+                <h3>1-Page ATS Vector Resume</h3>
+                <p class="subtitle">Standardized single-column ATS format • 100% parseable text layer</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary btn-sm" id="btnCopyResumeText">
+                  📄 Copy Resume Text
+                </button>
+                <button class="btn btn-primary btn-sm" id="btnPrintPdf">
+                  🖨️ Print / Save as PDF
+                </button>
+              </div>
+            </div>
+
+            <!-- ATS Pre-Flight Verification Scorecard -->
+            <div class="card ats-scorecard-card" style="margin-bottom: 16px; padding: 14px 18px; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 20px;">🛡️</span>
+                  <div>
+                    <div style="font-weight: 700; color: #fff; font-size: 13.5px;">ATS Pre-Flight Verification: <span style="color: #34d399;">98 / 100</span></div>
+                    <div style="font-size: 11.5px; color: var(--text-dim);">Validated against Workday, Greenhouse & Lever enterprise parsers</div>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <span class="mini-chip chip-match">✓ Pure Text Layer</span>
+                  <span class="mini-chip chip-match">✓ Literal Contacts</span>
+                  <span class="mini-chip chip-match">✓ 0 Keyword Stuffing</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Clean ATS Whitepaper -->
+            <div class="resume-paper" id="resumePaper">
+              <header class="resume-head">
+                <h1 id="cvName">Aman Rajbhar</h1>
+                <div class="resume-contact" id="cvContact">
+                  Bengaluru, India • amankumar@gmail.com • +91 98765 43210
+                </div>
+                <div class="resume-links">
+                  linkedin.com/in/aman-rajbhar • github.com/aman-rajbhar • amanrajbhar.dev
+                </div>
+              </header>
+
+              <div class="resume-section">
+                <div class="sec-heading">PROFESSIONAL SUMMARY</div>
+                <p id="cvSummary">
+                  Results-oriented AI & Machine Learning Engineer with verified experience building end-to-end LLM fine-tuning pipelines, RAG retrieval architectures, and scalable production microservices.
+                </p>
+              </div>
+
+              <div class="resume-section">
+                <div class="sec-heading">TECHNICAL COMPETENCIES</div>
+                <div class="sec-text" id="cvSkills">
+                  <strong>Core Languages & AI:</strong> Python, PyTorch, TensorFlow, Scikit-learn, LLMs, Generative AI, LangChain, LlamaIndex, RAG, Vector Databases.<br>
+                  <strong>Systems & Cloud:</strong> FastAPI, Docker, Kubernetes, PostgreSQL, REST APIs, Git, CI/CD.
+                </div>
+              </div>
+
+              <div class="resume-section">
+                <div class="sec-heading">VERIFIED ACHIEVEMENTS & PRODUCTION IMPACT</div>
+                <ul class="resume-bullets" id="cvAchievements">
+                  <li>Architected high-throughput AI document indexing engine processing 2.5M+ embeddings daily with 99.98% pipeline uptime.</li>
+                  <li>Developed and deployed end-to-end LLM fine-tuning pipelines and predictive ML models in production with sub-second inference.</li>
+                  <li>Built high-performance microservices handling data ingestion and vector retrieval with 99.9% uptime.</li>
+                  <li>Optimized distributed data pipelines, reducing latency by 42%.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Tailored Cover Letter Generator -->
+          <div class="cv-right">
+            <div class="card cover-letter-card">
+              <div class="card-toolbar">
+                <div>
+                  <h3>Tailored Cover Letter</h3>
+                  <p class="subtitle">Anti-cliché • High-impact • Formatted for executive review</p>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="btnCopyCoverLetter">
+                  📋 Copy Letter
+                </button>
+              </div>
+
+              <!-- Tone Selector -->
+              <div class="tone-selector-row" style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 8px 12px; background: rgba(255,255,255,0.02); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">Tone:</span>
+                <button type="button" class="btn-tone active" data-tone="executive">Executive Impact</button>
+                <button type="button" class="btn-tone" data-tone="technical">Technical Architecture</button>
+                <button type="button" class="btn-tone" data-tone="founder">Direct & Founder-Led</button>
+              </div>
+
+              <div class="letter-target-info">
+                <span>Targeting:</span> <strong id="letterTargetRole">AI Engineer</strong> at <strong id="letterTargetComp">Scale AI</strong>
+              </div>
+
+              <textarea id="letterTextarea" class="letter-box" rows="18">
+Dear Hiring Team,
+
+I am writing to express my focused interest in the AI Engineer role. With verified engineering experience developing scalable AI microservices, RAG architectures, and resilient Python pipelines, my background directly aligns with your requirements.
+
+In my recent initiatives, I built high-throughput document indexing systems processing over 2.5M embeddings daily while maintaining 99.98% pipeline uptime. My technical toolkit includes Python, PyTorch, LangChain, FastAPI, Docker, and Kubernetes.
+
+I look forward to discussing how my technical background can accelerate engineering milestones for your team.
+
+Sincerely,
+Aman Rajbhar
+              </textarea>
+
+              <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn btn-secondary" style="flex: 1;" id="btnInterviewFromCv">
+                  💡 Prepare Interview Q&A
+                </button>
+                <button class="btn btn-primary" style="flex: 2;" id="btnRegenerateAi">
+                  ✨ Re-generate Tailored Letter
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 4: INTERVIEW PREP STUDIO (Exhaustive Role-Specific Q&A) -->
+      <!-- =================================================================== -->
+      <section class="tab-pane" id="tabInterview" style="display: none;">
+        <div class="interview-layout">
+          <div class="tracker-hero">
+            <div class="tracker-header-row">
+              <div>
+                <h2>AI Interview Simulator & Strategic Prep</h2>
+                <p>Exhaustive technical deep-dives, system architecture scenarios, and behavioral STAR frameworks</p>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary" id="btnCopyInterviewPrep">
+                  📋 Copy All Prep Q&A
+                </button>
+                <button class="btn btn-primary" id="btnGenerateInterviewNow">
+                  ⚡ Generate Role-Specific Prep
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span class="tag-badge">Current Target Role</span>
+                <h3 id="prepTargetTitle" style="margin-top: 4px; font-size: 17px; color: #fff;">AI Engineer – LLMs & RAG Architectures</h3>
+                <p id="prepTargetCompany" style="color: var(--accent-blue); font-weight: 500;">Scale AI • Remote (Global)</p>
+              </div>
+              <button class="btn btn-outline btn-sm" id="btnChooseAnotherJobForPrep">
+                Change Target Job
+              </button>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div id="prepLoading" class="loading-state" style="display: none;">
+            <div class="spinner"></div>
+            <p>Formulating exhaustive technical questions, system design breakdowns, and STAR scenarios...</p>
+          </div>
+
+          <!-- Interactive Filter Tabs -->
+          <div class="interview-filter-row" style="display: flex; gap: 8px; margin-bottom: 16px;">
+            <button class="btn-prep-filter active" data-filter="all">All Prep Modules</button>
+            <button class="btn-prep-filter" data-filter="tech">Technical Deep-Dives</button>
+            <button class="btn-prep-filter" data-filter="star">Behavioral & STAR</button>
+            <button class="btn-prep-filter" data-filter="reverse">Reverse Questions</button>
+          </div>
+
+          <!-- Q&A Content Container -->
+          <div class="card prep-card" id="prepContentBox">
+            <div id="prepRenderedContent" class="prep-cards-container">
+              <!-- Dynamically populated with beautiful structured cards -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 5: UPSKILL HUB (/upskill CLI Equivalent) -->
+      <!-- =================================================================== -->
+      <section class="tab-pane" id="tabUpskill" style="display: none;">
+        <div class="upskill-layout">
+          <div class="tracker-hero">
+            <div class="tracker-header-row">
+              <div>
+                <h2>Market Skill Gap Heatmap & Learning Roadmap</h2>
+                <p>Derived from tracked job descriptions vs candidate profile competencies (/upskill engine)</p>
+              </div>
+              <button class="btn btn-primary" id="btnRefreshUpskill">
+                ⚡ Recalibrate Skill Gap Heatmap
+              </button>
+            </div>
+          </div>
+
+          <!-- Priority Gap Heatmap Grid -->
+          <div style="margin-bottom: 24px;">
+            <h3 style="font-size: 15px; margin-bottom: 12px; color: #fff;">Priority Market Skill Gaps (Weighted Frequency)</h3>
+            <div class="upskill-grid" id="upskillGapsGrid">
+              <!-- Injected by JavaScript -->
+            </div>
+          </div>
+
+          <!-- 4-Week Actionable Roadmap -->
+          <div class="card upskill-roadmap-card">
+            <div class="card-toolbar">
+              <h3>4-Week Strategic Upskilling Roadmap</h3>
+              <span class="badge-pro">Career Acceleration</span>
+            </div>
+            <p class="subtitle" style="margin-bottom: 16px;">Targeted milestones to bridge priority engineering gaps before upcoming interview rounds.</p>
+            <div class="roadmap-timeline" id="roadmapTimeline">
+              <!-- Injected by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 6: PIPELINE TRACKER & CONVERSION ANALYTICS (/html-report & /outcome) -->
+      <!-- =================================================================== -->
+      <section class="tab-pane" id="tabTracker" style="display: none;">
+        <div class="tracker-layout">
+          <div class="tracker-hero">
+            <div class="tracker-header-row">
+              <div>
+                <h2>Application Pipeline & Conversion Analytics</h2>
+                <p>Synced directly with <code>job_search_tracker.csv</code> on disk with follow-up automation</p>
+              </div>
+              <button class="btn btn-secondary" id="btnCopyAllCsv">
+                📥 Copy All CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- Funnel Analytics Cards (/html-report equivalent) -->
+          <div class="funnel-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px;">
+            <div class="card funnel-card">
+              <div class="funnel-label">TOTAL SUBMISSIONS</div>
+              <div class="funnel-number" id="statTotalApps">0</div>
+              <div class="funnel-sub">Logged in Tracker</div>
+            </div>
+            <div class="card funnel-card">
+              <div class="funnel-label">ACTIVE PIPELINE</div>
+              <div class="funnel-number" style="color: #38bdf8;" id="statActiveApps">0</div>
+              <div class="funnel-sub">Awaiting decision</div>
+            </div>
+            <div class="card funnel-card">
+              <div class="funnel-label">INTERVIEWS SCHEDULED</div>
+              <div class="funnel-number" style="color: #34d399;" id="statInterviews">0</div>
+              <div class="funnel-sub">Round 1 & Beyond</div>
+            </div>
+            <div class="card funnel-card">
+              <div class="funnel-label">INTERVIEW CONVERSION</div>
+              <div class="funnel-number" style="color: #fbbf24;" id="statConvRate">0%</div>
+              <div class="funnel-sub">Applied ➔ Interview Rate</div>
+            </div>
+          </div>
+
+          <!-- Tracker Table -->
+          <div class="card tracker-table-card">
+            <table class="tracker-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Company</th>
+                  <th>Target Role</th>
+                  <th>Fit Score</th>
+                  <th>Status</th>
+                  <th>Lifecycle Actions (/outcome)</th>
+                </tr>
+              </thead>
+              <tbody id="trackerTableBody">
+                <!-- Injected by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 7: CANDIDATE PROFILE VAULT (/setup & /expand) -->
+      <!-- =================================================================== -->
+      <section class="tab-pane" id="tabProfile" style="display: none;">
+        <div class="profile-layout">
+          <div class="profile-hero">
+            <div class="tracker-header-row">
+              <div>
+                <h2>Candidate Profile Vault</h2>
+                <p>Directly manages <code>candidate_profile.json</code> with auto-enrichment from verified projects</p>
+              </div>
+              <button type="button" class="btn btn-secondary" id="btnAutoEnrichProfile">
+                ⚡ Auto-Enrich Profile (/expand)
+              </button>
+            </div>
+          </div>
+
+          <form id="profileForm" class="card profile-form-card">
+            <div class="form-grid">
+              <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="profFullName" class="input-control" value="Aman Rajbhar">
+              </div>
+              <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="profEmail" class="input-control" value="amankumar@gmail.com">
+              </div>
+              <div class="input-group">
+                <label>Phone Number</label>
+                <input type="text" id="profPhone" class="input-control" value="+91 98765 43210">
+              </div>
+              <div class="input-group">
+                <label>Location & Work Preference</label>
+                <input type="text" id="profLocation" class="input-control" value="Bengaluru, India (Remote or Hybrid)">
+              </div>
+            </div>
+
+            <div class="input-group" style="margin-top: 14px;">
+              <label>Professional Headline</label>
+              <input type="text" id="profHeadline" class="input-control" value="AI & Machine Learning Engineer | Generative AI, PyTorch & Production Systems">
+            </div>
+
+            <div class="input-group" style="margin-top: 14px;">
+              <label>Core Technical Competencies (Comma separated)</label>
+              <textarea id="profSkills" class="input-control textarea-control" rows="3">Python, PyTorch, TensorFlow, Scikit-learn, LLMs, Generative AI, LangChain, LlamaIndex, RAG, Vector Databases, ChromaDB, Pinecone, FastAPI, Docker, Kubernetes, PostgreSQL, REST APIs, Git, CI/CD</textarea>
+            </div>
+
+            <div class="input-group" style="margin-top: 14px;">
+              <label>Verified Achievements (One bullet per line)</label>
+              <textarea id="profAchievements" class="input-control textarea-control" rows="4">• Architected high-throughput AI document indexing engine processing 2.5M+ embeddings daily with 99.98% pipeline uptime.
+• Developed and deployed end-to-end LLM fine-tuning pipelines and predictive ML models in production with sub-second inference.
+• Built high-performance microservices handling data ingestion and vector retrieval with 99.9% uptime.
+• Optimized distributed data pipelines and automated model evaluation benchmarks, reducing latency by 42%.</textarea>
+            </div>
+
+            <div class="form-actions" style="margin-top: 18px;">
+              <button type="submit" class="btn btn-primary" id="btnSaveProfile">
+                💾 Save Profile Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer Bar with Geo Status and Founder Admin Trigger -->
+    <footer style="margin-top: 36px; padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; gap: 10px;">
+      <div>
+        <span>AI Job Copilot v2.4 • Hardware Device Locked • Built by SoloPrime</span>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <span id="footerGeoBadge" style="color: #38bdf8;">🇮🇳 India (INR - ₹)</span>
+        <button type="button" id="btnOpenAdminVault" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; padding: 4px 10px; border-radius: 5px; font-size: 10.5px; font-weight: 700; cursor: pointer;">🔐 Founder Admin Vault</button>
+      </div>
+    </footer>
+
+    <!-- Founder Admin Vault Modal (Hardware Key Issuer & Anti-Resell Manager) -->
+    <div id="adminVaultModal" class="modal-overlay" style="display: none;">
+      <div class="modal-card" style="max-width: 680px; width: 95%;">
+        <div class="card-toolbar">
+          <div style="font-size: 11px; font-weight: 800; color: #a855f7; letter-spacing: 0.5px;">🔐 FOUNDER ADMIN VAULT — ANTI-RESELL & LICENSE MANAGER</div>
+          <button class="btn btn-outline btn-sm" id="btnCloseAdminModal">✕ Close</button>
+        </div>
+        
+        <!-- Auth View -->
+        <div id="adminAuthSection" style="margin-top: 14px;">
+          <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px;">Enter Founder Admin Secret to manage licenses, generate customer keys, and view hardware locks.</p>
+          <div style="display: flex; gap: 8px;">
+            <input type="password" id="adminSecretInput" class="input-control" placeholder="Enter Founder Admin PIN / Secret" style="font-size: 13px;">
+            <button class="btn btn-primary" id="btnAdminUnlock">Unlock Vault</button>
+          </div>
+          <div id="adminAuthError" style="display: none; color: #ef4444; font-size: 11px; margin-top: 6px;"></div>
+        </div>
+
+        <!-- Dashboard View (Shown after authentication) -->
+        <div id="adminDashSection" style="display: none; margin-top: 14px;">
+          <!-- Live Revenue & Sales Intelligence Cards -->
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px;">
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 8px 10px;">
+              <div style="font-size: 10px; color: #10b981; font-weight: 700; text-transform: uppercase;">Total Sales Revenue</div>
+              <div id="adminStatRevenue" style="font-size: 15px; font-weight: 800; color: #fff; margin-top: 2px;">₹0</div>
+            </div>
+            <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 8px 10px;">
+              <div style="font-size: 10px; color: #38bdf8; font-weight: 700; text-transform: uppercase;">Paid Licenses</div>
+              <div id="adminStatSalesCount" style="font-size: 15px; font-weight: 800; color: #fff; margin-top: 2px;">0</div>
+            </div>
+            <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 8px 10px;">
+              <div style="font-size: 10px; color: #f59e0b; font-weight: 700; text-transform: uppercase;">Active PC Locks</div>
+              <div id="adminStatLockedDevices" style="font-size: 15px; font-weight: 800; color: #fff; margin-top: 2px;">0</div>
+            </div>
+            <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 8px; padding: 8px 10px;">
+              <div style="font-size: 10px; color: #c084fc; font-weight: 700; text-transform: uppercase;">Free Trial Users</div>
+              <div id="adminStatTrialUsers" style="font-size: 15px; font-weight: 800; color: #fff; margin-top: 2px;">0</div>
+            </div>
+          </div>
+
+          <!-- Generator Box -->
+          <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+            <div style="font-size: 12px; font-weight: 700; color: #c084fc; margin-bottom: 8px;">⚡ Issue New 1-Device Hardware-Locked Customer Key</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; align-items: end;">
+              <div>
+                <label style="font-size: 10px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Customer Name</label>
+                <input type="text" id="adminNewBuyer" class="input-control" placeholder="e.g. Rahul Sharma" style="font-size: 11.5px; padding: 6px;">
+              </div>
+              <div>
+                <label style="font-size: 10px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Email</label>
+                <input type="email" id="adminNewEmail" class="input-control" placeholder="e.g. rahul@gmail.com" style="font-size: 11.5px; padding: 6px;">
+              </div>
+              <div>
+                <label style="font-size: 10px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Plan / Tier</label>
+                <select id="adminNewTier" class="input-control select-control" style="font-size: 11.5px; padding: 6px;">
+                  <option value="lifetime_pass">₹799 Lifetime Pass (India)</option>
+                  <option value="pro_monthly">₹299 Monthly (India)</option>
+                  <option value="global_season">$49 Global Season Pass (US/Intl)</option>
+                  <option value="global_monthly">$19 Global Monthly (US/Intl)</option>
+                </select>
+              </div>
+              <button class="btn btn-primary btn-sm" id="btnAdminGenerateKey" style="font-size: 11.5px; padding: 7px 12px; white-space: nowrap;">+ Issue Key</button>
+            </div>
+            <div id="adminGeneratedKeyNotice" style="display: none; margin-top: 8px; font-size: 12px; font-weight: 700; color: #10b981;"></div>
+          </div>
+
+          <!-- Existing Keys Table -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 12px; font-weight: 700; color: #fff;">Registered Licenses & Hardware Locks</span>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-outline btn-sm" id="btnAdminExportCsv" style="padding: 2px 8px; font-size: 10px; color: #10b981; border-color: rgba(16, 185, 129, 0.4);">📥 Export CSV</button>
+              <button class="btn btn-outline btn-sm" id="btnAdminRefreshLicenses" style="padding: 2px 8px; font-size: 10px;">↻ Refresh</button>
+            </div>
+          </div>
+          <div style="max-height: 240px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left;">
+              <thead style="background: #18181b; position: sticky; top: 0;">
+                <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+                  <th style="padding: 6px 10px;">License Key</th>
+                  <th style="padding: 6px 10px;">Buyer</th>
+                  <th style="padding: 6px 10px;">Tier</th>
+                  <th style="padding: 6px 10px;">Device Lock</th>
+                  <th style="padding: 6px 10px;">Status</th>
+                  <th style="padding: 6px 10px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminLicensesTableBody">
+                <!-- Injected by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    <!-- Chrome Extension Install Guide Modal -->
+    <div id="extInstallModal" class="modal-overlay" style="display: none;">
+      <div class="modal-card" style="max-width: 520px; width: 95%;">
+        <div class="card-toolbar">
+          <div style="font-size: 11px; font-weight: 800; color: #38bdf8; letter-spacing: 0.5px;">🧩 AI JOB COPILOT — CHROME EXTENSION</div>
+          <button class="btn btn-outline btn-sm" id="btnCloseExtModal">✕ Close</button>
+        </div>
+        
+        <div style="margin-top: 14px;">
+          <h3 style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 6px;">Install Chrome Extension in 3 Easy Steps</h3>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">Scrapes LinkedIn, Naukri & Indeed jobs right from your browser tab and syncs with your Pro license.</p>
+          
+          <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 14px; text-align: center; margin-bottom: 16px;">
+            <a href="/ai-job-copilot-extension.zip" download="ai-job-copilot-extension.zip" class="btn btn-primary" style="font-size: 13px; font-weight: 700; padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px;">
+              📥 Download Extension Package (.ZIP)
+            </a>
+            <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 6px;">Complete pre-built package • Ready for Chrome, Brave, Edge & Opera</div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 11.5px; color: var(--text-secondary);">
+            <div style="display: flex; gap: 10px; align-items: flex-start;">
+              <span style="background: #27272a; color: #38bdf8; font-weight: 800; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</span>
+              <div><strong>Download & Unzip:</strong> Click the button above and extract the downloaded <code>ai-job-copilot-extension.zip</code> into a folder on your computer.</div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: flex-start;">
+              <span style="background: #27272a; color: #38bdf8; font-weight: 800; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</span>
+              <div><strong>Open Extensions in Chrome:</strong> In your Chrome address bar, open <code style="background: #18181b; padding: 1px 5px; border-radius: 4px; color: #fbbf24;">chrome://extensions</code> and turn ON <strong>"Developer mode"</strong> in the top-right corner.</div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: flex-start;">
+              <span style="background: #27272a; color: #38bdf8; font-weight: 800; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</span>
+              <div><strong>Click "Load unpacked":</strong> Select the unzipped extension folder. The AI Job Copilot sidepanel will instantly appear in your browser!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

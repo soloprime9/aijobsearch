@@ -1,0 +1,9 @@
+{
+  "name": "ai-job-copilot-studio",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AI Job Copilot - Unified Web Studio Dashboard",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

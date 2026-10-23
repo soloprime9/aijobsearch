@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: ai-job-copilot
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: ""
+    startCommand: "node web/server.js"
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: ADMIN_SECRET
+        generateValue: true
+      - key: VAULT_SECRET_SALT
+        generateValue: true

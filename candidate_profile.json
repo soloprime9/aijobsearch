@@ -1,0 +1,17 @@
+{
+  "fullName": "Aman Rajbhar",
+  "email": "amankumar@gmail.com",
+  "phone": "+91 98765 43210",
+  "location": "Bengaluru, India (Open to Remote / Relocation)",
+  "linkedin": "https://linkedin.com/in/aman-rajbhar",
+  "github": "https://github.com/aman-rajbhar",
+  "portfolio": "https://amanrajbhar.dev",
+  "headline": "AI & Machine Learning Engineer | Generative AI, LLMs, PyTorch, RAG Pipelines & Production Microservices",
+  "targetRoles": "AI Engineer, Machine Learning Engineer, Generative AI Developer, Python Backend Engineer",
+  "minSalary": "18,00,000 INR / $80,000 USD",
+  "workPreference": "Remote or Hybrid",
+  "usAuth": "no_sponsorship_needed_india",
+  "requireSponsorship": "no",
+  "skills": "Python, PyTorch, TensorFlow, Scikit-learn, LLMs, Generative AI, LangChain, LlamaIndex, RAG, Vector Databases, ChromaDB, Pinecone, FastAPI, Docker, Kubernetes, PostgreSQL, REST APIs, Git, CI/CD",
+  "achievements": "• Architected high-throughput AI document indexing engine processing 2.5M+ embeddings daily with 99.98% pipeline uptime.\n• Developed and deployed end-to-end LLM fine-tuning pipelines and predictive ML models in production with sub-second inference.\n• Built high-performance microservices handling data ingestion and vector retrieval with 99.9% uptime.\n• Optimized distributed data pipelines and automated model evaluation benchmarks, reducing latency by 42%."
+}

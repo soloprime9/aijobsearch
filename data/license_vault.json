@@ -1,0 +1,129 @@
+{
+  "secretSalt": "COPILOT_HWID_SECRET_SALT_894372985723984",
+  "licenses": {
+    "PRO-FOUNDER-SOLOPRIME": {
+      "buyer": "SoloPrime (Founder)",
+      "email": "soloprime@fondpeace.com",
+      "tier": "founder_unlimited",
+      "maxDevices": 999999,
+      "activeDevices": [
+        {
+          "deviceId": "DEV-FOUNDER-LAPTOP-01",
+          "platform": "Admin Master Device",
+          "activatedAt": "2026-10-23T02:56:48.319Z"
+        },
+        {
+          "deviceId": "DEV-FOUNDER-PHONE-02",
+          "platform": "Admin Master Device",
+          "activatedAt": "2026-10-23T02:56:48.458Z"
+        },
+        {
+          "deviceId": "DEV-FOUNDER-TABLET-03",
+          "platform": "Admin Master Device",
+          "activatedAt": "2026-10-23T02:56:48.476Z"
+        },
+        {
+          "deviceId": "DEV-FOUNDER-PHONE",
+          "platform": "Admin Master Device",
+          "activatedAt": "2026-10-23T03:15:57.987Z"
+        }
+      ],
+      "createdAt": "2026-10-23",
+      "status": "active"
+    },
+    "PRO-DEMO-2026": {
+      "buyer": "Demo Customer",
+      "email": "demo@user.com",
+      "tier": "pro_monthly",
+      "maxDevices": 1,
+      "activeDevices": [
+        {
+          "deviceId": "DEV-TEST-001",
+          "platform": "Web / Chrome Extension",
+          "activatedAt": "2026-10-23T01:12:01.479Z"
+        }
+      ],
+      "createdAt": "2026-10-23",
+      "status": "active"
+    },
+    "PRO-7821-X9K2-M5N3": {
+      "buyer": "Early Adopter Pro",
+      "email": "client@example.com",
+      "tier": "lifetime_pass",
+      "maxDevices": 1,
+      "activeDevices": [],
+      "createdAt": "2026-10-23",
+      "status": "active"
+    },
+    "PRO-15A444-0BFCFB": {
+      "buyer": "Aman Sharma",
+      "email": "aman@sharma.in",
+      "tier": "lifetime_pass",
+      "maxDevices": 1,
+      "activeDevices": [
+        {
+          "deviceId": "DEV-LAPTOP-AMAN-001",
+          "platform": "Web Studio",
+          "activatedAt": "2026-10-23T01:29:21.487Z"
+        }
+      ],
+      "createdAt": "2026-10-23T01:29:21.388Z",
+      "status": "active"
+    },
+    "PRO-UPI-740192": {
+      "buyer": "UPI Verified (UTR-0192)",
+      "email": "upi-transfer@client.in",
+      "tier": "lifetime_pass",
+      "maxDevices": 1,
+      "activeDevices": [
+        {
+          "deviceId": "DEV-PHONEPE-USER-001",
+          "platform": "Web Studio",
+          "activatedAt": "2026-10-23T01:29:32.515Z"
+        }
+      ],
+      "createdAt": "2026-10-23T01:29:32.515Z",
+      "status": "active",
+      "utrNumber": "429182740192"
+    },
+    "PRO-93D4E4-2E28F7": {
+      "buyer": "Priya Verma",
+      "email": "priya@verma.in",
+      "tier": "lifetime_pass",
+      "maxDevices": 1,
+      "activeDevices": [
+        {
+          "deviceId": "DEV-PRIYA-NEW-PC",
+          "platform": "Web Studio",
+          "activatedAt": "2026-10-23T01:30:03.518Z"
+        }
+      ],
+      "createdAt": "2026-10-23T01:30:03.370Z",
+      "status": "revoked"
+    },
+    "PRO-CEF114-837CC0": {
+      "buyer": "Rohan Mehta",
+      "email": "rohan@mehta.in",
+      "tier": "lifetime_pass",
+      "maxDevices": 1,
+      "activeDevices": [
+        {
+          "deviceId": "ROHAN-MACBOOK-AIR",
+          "platform": "Web / Chrome Extension",
+          "activatedAt": "2026-10-23T03:15:58.055Z"
+        }
+      ],
+      "createdAt": "2026-10-23T03:15:58.032Z",
+      "status": "active"
+    },
+    "PRO-4D085B-84083B": {
+      "buyer": "scriptalert(1)/scriptJohn Doe",
+      "email": "img src=x onerror=alert(1)john@doe.com",
+      "tier": "lifetime_pass",
+      "maxDevices": 1,
+      "activeDevices": [],
+      "createdAt": "2026-10-23T03:33:59.805Z",
+      "status": "active"
+    }
+  }
+}
