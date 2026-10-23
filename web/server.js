@@ -1437,6 +1437,13 @@ function getComprehensiveInterviewMaster(job, profile) {
 // Hardware Device & Anti-Resell Session Verifier
 const deviceTrialStore = new Map();
 
+function getDeviceTrial(deviceId) {
+  if (!deviceTrialStore.has(deviceId)) {
+    deviceTrialStore.set(deviceId, { scans: 3, aiActions: 1 });
+  }
+  return deviceTrialStore.get(deviceId);
+}
+
 function verifyLicenseSession(req) {
   const licenseKey = (req.headers['x-license-key'] || '').trim().toUpperCase();
   const deviceId = (req.headers['x-device-id'] || '').trim();
@@ -1567,7 +1574,7 @@ const server = http.createServer(async (req, res) => {
 
     // Enforce trial limit if not Pro and not initial sample load
     if (!auth.isPro && !isBoot) {
-      const usage = deviceTrialStore.get(deviceId) || { scans: 3, cv: 1 };
+      const usage = getDeviceTrial(deviceId);
       if (usage.scans <= 0) {
         res.writeHead(402, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({
@@ -1669,8 +1676,10 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
-    // Slice to exact requested limit
-    if (limit > 0) {
+    // Slice to limit: Free users get max 5 preview jobs, Pro users get requested limit
+    if (!auth.isPro) {
+      uniqueCards = uniqueCards.slice(0, 5);
+    } else if (limit > 0) {
       uniqueCards = uniqueCards.slice(0, limit);
     }
 
@@ -1830,6 +1839,22 @@ const server = http.createServer(async (req, res) => {
 
   // API 4: In-Depth Interview Prep Studio
   if (pathname === '/api/interview-prep' && req.method === 'POST') {
+    const deviceId = req.headers['x-device-id'] || req.socket.remoteAddress || 'anon';
+    const auth = verifyLicenseSession(req);
+
+    if (!auth.isPro) {
+      const usage = getDeviceTrial(deviceId);
+      if (usage.aiActions <= 0) {
+        res.writeHead(402, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({
+          error: 'Free AI quota exhausted (1/1 used). To preserve Gemini compute quota and prepare unlimited role-specific interview Q&As, upgrade to Pro.',
+          requiresUpgrade: true
+        }));
+      }
+      usage.aiActions -= 1;
+      deviceTrialStore.set(deviceId, usage);
+    }
+
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', async () => {
@@ -1919,15 +1944,15 @@ Format cleanly with clear headings and bullet points. Never truncate or leave se
     const auth = verifyLicenseSession(req);
 
     if (!auth.isPro) {
-      const usage = deviceTrialStore.get(deviceId) || { scans: 3, cv: 1 };
-      if (usage.cv <= 0) {
+      const usage = getDeviceTrial(deviceId);
+      if (usage.aiActions <= 0) {
         res.writeHead(402, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({
-          error: 'Free trial CV tailoring exhausted (1/1 used). Upgrade to Pro for unlimited ATS resumes & cover letters.',
+          error: 'Free AI quota exhausted (1/1 used). To preserve Gemini compute quota and generate unlimited tailored ATS resumes & cover letters, upgrade to Pro.',
           requiresUpgrade: true
         }));
       }
-      usage.cv -= 1;
+      usage.aiActions -= 1;
       deviceTrialStore.set(deviceId, usage);
     }
 

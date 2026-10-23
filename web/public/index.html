@@ -263,11 +263,11 @@
         <!-- Universal Activation Box -->
         <div class="activation-input-box">
           <label class="activation-label">
-            Have a <strong>License Key</strong>, <strong>UPI UTR / Bank Ref</strong>, or <strong>Founder PIN</strong>?
+            Paid via UPI or have a Key? Enter your <strong>12-digit UPI Ref / UTR Number</strong> or <strong>License Key</strong>:
           </label>
           <div class="activation-control-group">
-            <input type="text" id="webActivationInput" placeholder="Enter key (e.g. PRO-XXXX, UTR, or PIN)" class="input-control activation-field">
-            <button type="button" class="btn btn-primary" id="btnWebActivateKey">Unlock Pro</button>
+            <input type="text" id="webActivationInput" placeholder="e.g. 429182049182 (UPI UTR) or PRO-XXXX" class="input-control activation-field">
+            <button type="button" class="btn btn-primary" id="btnWebActivateKey">Unlock Pro Instantly</button>
           </div>
           <div id="webActivationStatus" class="activation-status-msg" style="display: none;"></div>
         </div>
@@ -310,12 +310,17 @@
             <div class="nudge-badge">⚡ STEP 1: CANDIDATE PROFILE REQUIRED</div>
             <div class="nudge-body">
               <div class="nudge-text">
-                <h3>Complete your Candidate Profile to unlock 95%+ precision AI fit scoring</h3>
-                <p>AI match scores, tailored ATS resumes, and interview simulation require your target role and core skills. Set up your profile in 60 seconds.</p>
+                <h3>Set up your Profile to test AI fit scoring & 1-click ATS resumes</h3>
+                <p>AI match scores, tailored ATS resumes, and interview simulation require your target role and skills. Enter your details or load sample data in 1 click to test immediately.</p>
               </div>
-              <button type="button" class="btn btn-primary" id="btnNudgeSetupProfile">
-                Complete Profile in 60s ➔
-              </button>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                <button type="button" class="btn btn-outline" id="btnNudgeLoadSample" style="white-space: nowrap; font-size: 12px; padding: 8px 14px; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;">
+                  ⚡ Quick Demo (Sample Data)
+                </button>
+                <button type="button" class="btn btn-primary" id="btnNudgeSetupProfile" style="white-space: nowrap; font-size: 12px; padding: 8px 16px;">
+                  Complete Profile ➔
+                </button>
+              </div>
             </div>
           </div>
 
@@ -905,11 +910,16 @@ Candidate Name
             <div class="tracker-header-row">
               <div>
                 <h2>Candidate Profile Vault</h2>
-                <p>Directly manages <code>candidate_profile.json</code> with auto-enrichment from verified projects</p>
+                <p>Powers 95%+ precision AI fit scoring, ATS resumes & interview question calibration</p>
               </div>
-              <button type="button" class="btn btn-secondary" id="btnAutoEnrichProfile">
-                ⚡ Auto-Enrich Profile (/expand)
-              </button>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline" id="btnLoadSampleProfile" title="Fill with realistic sample data for instant testing">
+                  ⚡ Load Sample Profile
+                </button>
+                <button type="button" class="btn btn-secondary" id="btnAutoEnrichProfile">
+                  ✨ Auto-Enrich Profile (/expand)
+                </button>
+              </div>
             </div>
           </div>
 

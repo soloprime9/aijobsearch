@@ -204,9 +204,15 @@
   function getWebFreemium() {
     try {
       const saved = localStorage.getItem('ai_copilot_freemium_state');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.aiActions === undefined) {
+          parsed.aiActions = parsed.cv !== undefined ? parsed.cv : 1;
+        }
+        return parsed;
+      }
     } catch {}
-    return { scans: 3, cv: 1, isPro: false, proKey: null };
+    return { scans: 3, aiActions: 1, cv: 1, isPro: false, proKey: null };
   }
 
   function saveWebFreemium(state) {
@@ -218,8 +224,6 @@
   function renderWebFreemiumUI() {
     const state = getWebFreemium();
     const pill = document.getElementById('webCreditPill');
-    const scansCount = document.getElementById('webScansCount');
-    const cvCount = document.getElementById('webCvCount');
     const btnUpgrade = document.getElementById('btnWebUpgrade');
 
     if (!pill) return;
@@ -235,13 +239,14 @@
       `;
       if (btnUpgrade) btnUpgrade.style.display = 'none';
     } else {
+      const aiCount = state.aiActions !== undefined ? state.aiActions : (state.cv || 0);
       pill.style.background = 'rgba(39, 39, 42, 0.6)';
       pill.style.borderColor = 'var(--border-color)';
       pill.innerHTML = `
         <span class="sparkle" style="color: #fbbf24;">⚡</span>
         <span id="webScansCount" style="color: #38bdf8; font-weight: 700;">${state.scans}</span> <span style="color: var(--text-muted); font-size: 11px;">Scans</span>
         <span style="color: var(--text-muted); font-size: 10px;">•</span>
-        <span id="webCvCount" style="color: #38bdf8; font-weight: 700;">${state.cv}</span> <span style="color: var(--text-muted); font-size: 11px;">CV</span>
+        <span id="webAiCount" style="color: ${aiCount > 0 ? '#38bdf8' : '#f87171'}; font-weight: 700;">${aiCount}</span> <span style="color: var(--text-muted); font-size: 11px;">Free AI</span>
       `;
       if (btnUpgrade) btnUpgrade.style.display = 'flex';
     }
@@ -1055,8 +1060,9 @@
     }
 
     const freeState = getWebFreemium();
-    if (!freeState.isPro && freeState.cv <= 0) {
-      openWebUpgradeModal("You have used your 1 free tailored ATS CV. Upgrade to Pro for unlimited 1-click ATS resumes & cover letters.");
+    const currentAiQuota = freeState.aiActions !== undefined ? freeState.aiActions : (freeState.cv !== undefined ? freeState.cv : 1);
+    if (!freeState.isPro && currentAiQuota <= 0) {
+      openWebUpgradeModal("Free AI quota exhausted (1/1 used). To preserve Gemini compute quota and generate unlimited tailored ATS resumes & cover letters, upgrade to Pro.");
       return;
     }
 
@@ -1098,7 +1104,8 @@
       showToast('✓ Tailored ATS Resume & Letter ready!');
 
       if (!freeState.isPro) {
-        freeState.cv = Math.max(0, freeState.cv - 1);
+        freeState.aiActions = 0;
+        freeState.cv = 0;
         saveWebFreemium(freeState);
         renderWebFreemiumUI();
       }
@@ -1152,6 +1159,13 @@ ${candidateProfile?.achievements || ''}
       return;
     }
 
+    const freeState = getWebFreemium();
+    const currentAiQuota = freeState.aiActions !== undefined ? freeState.aiActions : (freeState.cv !== undefined ? freeState.cv : 1);
+    if (!freeState.isPro && currentAiQuota <= 0) {
+      openWebUpgradeModal("Free AI quota exhausted (1/1 used). To preserve Gemini compute quota and generate role-specific interview Q&As, upgrade to Pro.");
+      return;
+    }
+
     const job = activeJobDetail.job;
     const prof = candidateProfile || {};
 
@@ -1160,15 +1174,33 @@ ${candidateProfile?.achievements || ''}
     btnGenerateInterviewNow.disabled = true;
 
     try {
+      const devId = getOrGenerateDeviceId();
       const res = await fetch('/api/interview-prep', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-device-id': devId,
+          'x-license-key': freeState.proKey || '',
+          'x-license-token': freeState.token || ''
+        },
         body: JSON.stringify({ job, profile: prof })
       });
+      if (res.status === 402) {
+        const errData = await res.json();
+        openWebUpgradeModal(errData.error);
+        return;
+      }
       const data = await res.json();
       lastInterviewPrepText = data.prep || "";
       parseAndRenderInterviewCards(lastInterviewPrepText);
       showToast(`✓ Comprehensive Interview Prep Guide generated for ${job.title}!`);
+
+      if (!freeState.isPro) {
+        freeState.aiActions = 0;
+        freeState.cv = 0;
+        saveWebFreemium(freeState);
+        renderWebFreemiumUI();
+      }
     } catch (e) {
       showToast('Generated using standard master prep dossier.');
     } finally {
@@ -1606,6 +1638,50 @@ ${candidateProfile?.achievements || ''}
       if (profFullName) profFullName.focus();
     });
   }
+
+  const SAMPLE_DEMO_PROFILE = {
+    fullName: "Alex Rivera",
+    email: "alex.rivera.dev@gmail.com",
+    phone: "+91 98765 43210",
+    location: "Bengaluru, India (Remote or Hybrid)",
+    headline: "Senior Full-Stack & AI Engineer | Python, React, PyTorch, RAG Pipelines",
+    skills: "Python, PyTorch, FastAPI, React, TypeScript, Docker, Kubernetes, PostgreSQL, LangChain, RAG Systems, Git, CI/CD, AWS",
+    achievements: "• Architected distributed RAG semantic search microservices handling 2.5M queries daily with 99.98% pipeline uptime.\n• Optimized LLM inference latency by 42% utilizing quantized model caching and GPU batching pipelines.\n• Led engineering of end-to-end full-stack web applications serving 120k active monthly developers."
+  };
+
+  async function loadSampleCandidateProfile() {
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(SAMPLE_DEMO_PROFILE)
+      });
+      candidateProfile = SAMPLE_DEMO_PROFILE;
+      if (profFullName) profFullName.value = SAMPLE_DEMO_PROFILE.fullName;
+      if (profEmail) profEmail.value = SAMPLE_DEMO_PROFILE.email;
+      if (profPhone) profPhone.value = SAMPLE_DEMO_PROFILE.phone;
+      if (profLocation) profLocation.value = SAMPLE_DEMO_PROFILE.location;
+      if (profHeadline) profHeadline.value = SAMPLE_DEMO_PROFILE.headline;
+      if (profSkills) profSkills.value = SAMPLE_DEMO_PROFILE.skills;
+      if (profAchievements) profAchievements.value = SAMPLE_DEMO_PROFILE.achievements;
+
+      if (cvName) cvName.textContent = SAMPLE_DEMO_PROFILE.fullName;
+      if (cvContact) cvContact.textContent = `${SAMPLE_DEMO_PROFILE.location} • ${SAMPLE_DEMO_PROFILE.email} • ${SAMPLE_DEMO_PROFILE.phone}`;
+      if (cvSkills) cvSkills.innerHTML = `<strong>Technical Stack:</strong> ${SAMPLE_DEMO_PROFILE.skills}`;
+
+      if (profileSetupBanner) profileSetupBanner.style.display = 'none';
+
+      showToast('✓ Sample Demo Profile loaded! Job match scores calibrated.');
+      executeSearch(true);
+    } catch {
+      showToast('Failed to load sample profile', true);
+    }
+  }
+
+  const btnNudgeLoadSample = document.getElementById('btnNudgeLoadSample');
+  const btnLoadSampleProfile = document.getElementById('btnLoadSampleProfile');
+  if (btnNudgeLoadSample) btnNudgeLoadSample.addEventListener('click', loadSampleCandidateProfile);
+  if (btnLoadSampleProfile) btnLoadSampleProfile.addEventListener('click', loadSampleCandidateProfile);
 
   const btnTutorialDownloadExt = document.getElementById('btnTutorialDownloadExt');
   if (btnTutorialDownloadExt) {
