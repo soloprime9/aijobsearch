@@ -348,47 +348,31 @@
 
   if (planInrLifetime) {
     planInrLifetime.addEventListener('click', () => {
-      planInrLifetime.style.background = 'rgba(245, 158, 11, 0.15)';
-      planInrLifetime.style.border = '2px solid #f59e0b';
-      if (planInrMonthly) {
-        planInrMonthly.style.background = '#18181b';
-        planInrMonthly.style.border = '1px solid var(--border-color)';
-      }
+      planInrLifetime.classList.add('active');
+      if (planInrMonthly) planInrMonthly.classList.remove('active');
       updateUpiQrCode('799', '₹799 Lifetime Pass');
     });
   }
 
   if (planInrMonthly) {
     planInrMonthly.addEventListener('click', () => {
-      planInrMonthly.style.background = 'rgba(245, 158, 11, 0.15)';
-      planInrMonthly.style.border = '2px solid #f59e0b';
-      if (planInrLifetime) {
-        planInrLifetime.style.background = '#18181b';
-        planInrLifetime.style.border = '1px solid var(--border-color)';
-      }
+      planInrMonthly.classList.add('active');
+      if (planInrLifetime) planInrLifetime.classList.remove('active');
       updateUpiQrCode('299', '₹299 Monthly Plan');
     });
   }
 
   if (planUsdLifetime) {
     planUsdLifetime.addEventListener('click', () => {
-      planUsdLifetime.style.background = 'rgba(56, 189, 248, 0.15)';
-      planUsdLifetime.style.border = '2px solid #38bdf8';
-      if (planUsdMonthly) {
-        planUsdMonthly.style.background = '#18181b';
-        planUsdMonthly.style.border = '1px solid var(--border-color)';
-      }
+      planUsdLifetime.classList.add('active');
+      if (planUsdMonthly) planUsdMonthly.classList.remove('active');
     });
   }
 
   if (planUsdMonthly) {
     planUsdMonthly.addEventListener('click', () => {
-      planUsdMonthly.style.background = 'rgba(56, 189, 248, 0.15)';
-      planUsdMonthly.style.border = '2px solid #38bdf8';
-      if (planUsdLifetime) {
-        planUsdLifetime.style.background = '#18181b';
-        planUsdLifetime.style.border = '1px solid var(--border-color)';
-      }
+      planUsdMonthly.classList.add('active');
+      if (planUsdLifetime) planUsdLifetime.classList.remove('active');
     });
   }
 
@@ -396,14 +380,19 @@
   payTabs.forEach(tab => {
     tab.addEventListener('click', () => {
       payTabs.forEach(t => {
-        t.style.background = 'transparent';
-        t.style.color = 'var(--text-muted)';
+        t.classList.remove('active');
+        t.removeAttribute('style');
       });
-      tab.style.background = '#f59e0b';
-      tab.style.color = '#000';
+      tab.classList.add('active');
       const targetId = tab.dataset.tab;
       payMethodViews.forEach(v => {
-        v.style.display = (v.id === targetId) ? 'block' : 'none';
+        if (v.id === targetId) {
+          v.style.display = 'block';
+          v.classList.add('active');
+        } else {
+          v.style.display = 'none';
+          v.classList.remove('active');
+        }
       });
     });
   });
@@ -854,7 +843,7 @@
 
     searchLoading.style.display = 'block';
     jobsGrid.innerHTML = '';
-    resultsCount.textContent = `Scanning across ${portal === 'all' ? 'LinkedIn & ATS Platforms' : portal}...`;
+    resultsCount.textContent = 'Scanning...';
     btnRunSearch.disabled = true;
 
     try {
@@ -878,8 +867,8 @@
 
       window._lastScannedJobs = data.jobs || [];
       renderJobCards(data.jobs || []);
-      resultsCount.textContent = `${data.jobs.length} Opportunities Ranked (${portal.toUpperCase()})`;
-      showToast(`✓ Evaluated ${data.jobs.length} jobs for "${q}"!`);
+      resultsCount.textContent = `${data.jobs.length} Roles Found`;
+      showToast(`✓ Evaluated ${data.jobs.length} jobs!`);
 
       if (!isInitialBoot) {
         const freeState = getWebFreemium();
@@ -931,21 +920,27 @@
       const salText = item.salary?.baseline || 'Competitive Baseline';
 
       card.innerHTML = `
-        <div>
+        <div class="job-card-inner">
           <div class="job-card-top">
-            <div>
-              <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 4px; flex-wrap: wrap;">
+            <div class="job-card-header-meta">
+              <div class="card-meta-chips">
                 <span class="source-badge">${sourceName}</span>
-                <span class="salary-card-pill">💰 ${salText}</span>
-                ${item.ambitionbox ? `<span class="ambitionbox-pill">★ ${item.ambitionbox.rating} AmbitionBox</span>` : ''}
-                ${item.audit ? `<span class="trust-badge-pill">${item.audit.badgeText}</span>` : ''}
+                <span class="salary-card-pill">${salText}</span>
+                ${item.ambitionbox ? `<span class="ambitionbox-pill">★ ${item.ambitionbox.rating}</span>` : ''}
+                ${item.audit ? `<span class="trust-badge-pill">🛡️ Verified</span>` : ''}
               </div>
-              <div class="card-role-title" title="${item.title}">${item.title}</div>
-              <div class="card-comp-name">${item.company || 'Direct Employer'}</div>
-              <div class="card-loc-name">${item.location || 'Remote'} • ${item.date || 'Active'}</div>
+              <h4 class="card-role-title" title="${item.title}">${item.title}</h4>
+              <div class="card-comp-row">
+                <span class="card-comp-name">${item.company || 'Direct Employer'}</span>
+                <span class="card-comp-dot">•</span>
+                <span class="card-loc-name">${item.location || 'Remote'}</span>
+              </div>
             </div>
-            <div style="text-align: right;">
-              <span class="score-pill ${scoreClass}">${ev.score.toFixed(1)}</span>
+            <div class="score-container">
+              <div class="score-pill ${scoreClass}">
+                <span class="score-dot"></span>
+                <span>${ev.score.toFixed(1)}</span>
+              </div>
             </div>
           </div>
           <p class="card-summary-text">${ev.summary}</p>
@@ -961,11 +956,11 @@
           <button class="btn btn-primary btn-sm btn-tailor-job" data-id="${item.id}">
             ⚡ Tailor CV
           </button>
-          <button class="btn btn-outline btn-sm btn-quick-track" data-id="${item.id}" title="Quick add to Pipeline Tracker">
-            💾
+          <button class="btn-icon-action btn-quick-track" data-id="${item.id}" title="Save to Pipeline Tracker">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           </button>
-          <a href="${item.url || '#'}" target="_blank" class="icon-btn-external" title="Open original job posting">
-            ↗
+          <a href="${item.url || '#'}" target="_blank" class="btn-icon-action" title="Open Original Posting">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </a>
         </div>
       `;

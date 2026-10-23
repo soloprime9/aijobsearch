@@ -105,31 +105,15 @@ function clearFailedAttempts(req) {
   ipFailedAttempts.delete(ip);
 }
 
-// Helper to decode keys safely whether passed as plain text or base64 token
-function decodeKeyToken(token) {
-  if (!token || typeof token !== 'string') return '';
-  const trimmed = token.trim();
-  if (trimmed.startsWith('QVEu') || (trimmed.length > 30 && trimmed.endsWith('='))) {
-    try {
-      const decoded = Buffer.from(trimmed, 'base64').toString('utf8');
-      if (decoded.startsWith('AQ.') || decoded.startsWith('AIza')) {
-        return decoded;
-      }
-    } catch (_) {}
-  }
-  return trimmed;
-}
-
 // Active Multi-Key AI Pool (Dynamic Obfuscated Runtime Pool + Env Override)
 const RAW_KEY_TOKENS = [
   "QVEuQWI4Uk42SlRuQlpvOXNPWVlwQjhjQ2FSTzdRLU9kUkdvVWV6ZW15MjNYZUVqdFU4OFE=",
   "QVEuQWI4Uk42TFlDNFc3UHF0VTFuSVBLa0hxSGJnclR5U2Utckt2NEsyR2hENHRBZU9pa1E=",
   "QVEuQWI4Uk42S1IyMTVTU0E3eHlhNXJqejVMNHcxbGJKb3RqYjNXbENGX0x0aC0tUU51Qmc="
 ];
-const RAW_ENV_KEYS = process.env.GEMINI_API_KEYS ? process.env.GEMINI_API_KEYS.split(',').map(s => s.trim()).filter(Boolean) : null;
-const KEY_POOL = (RAW_ENV_KEYS && RAW_ENV_KEYS.length ? RAW_ENV_KEYS.map(decodeKeyToken) : null) ||
-  (process.env.GEMINI_API_KEY ? [decodeKeyToken(process.env.GEMINI_API_KEY)] : null) ||
-  RAW_KEY_TOKENS.map(decodeKeyToken);
+const KEY_POOL = (process.env.GEMINI_API_KEYS ? process.env.GEMINI_API_KEYS.split(',').map(s => s.trim()).filter(Boolean) : null) ||
+  (process.env.GEMINI_API_KEY ? [process.env.GEMINI_API_KEY.trim()] : null) ||
+  RAW_KEY_TOKENS.map(token => Buffer.from(token, 'base64').toString('utf8'));
 
 // LinkedIn URLs
 const SEARCH_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search";
