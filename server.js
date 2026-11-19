@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const ROOT_DIR = path.resolve(__dirname, "..");
+const ROOT_DIR = __dirname;
 
 const PORT = process.env.PORT || 3000;
 
@@ -24,8 +24,9 @@ const MIME_TYPES = {
   ".txt": "text/plain; charset=utf-8",
 };
 
-const server = http.createServer((req, res) => {
-  const reqUrl = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+export function handleRequest(req, res) {
+  const host = req.headers.host || "localhost";
+  const reqUrl = new URL(req.url, `http://${host}`);
   let pathname = decodeURIComponent(reqUrl.pathname);
 
   if (pathname === "/api/health" || pathname === "/healthz") {
@@ -39,8 +40,8 @@ const server = http.createServer((req, res) => {
 
   const searchLocations = [
     path.join(__dirname, "public", pathname),
+    path.join(__dirname, "web", "public", pathname),
     path.join(__dirname, pathname),
-    path.join(ROOT_DIR, pathname),
   ];
 
   let filePath = null;
@@ -90,10 +91,15 @@ const server = http.createServer((req, res) => {
     });
     fs.createReadStream(filePath).pipe(res);
   }
-});
+}
 
-export default server;
+// Default export for Vercel Serverless Function
+export default handleRequest;
 
-server.listen(PORT, () => {
-  console.log(`AutoClip Pro Server listening on port ${PORT}`);
-});
+// Direct listener for Docker (Render.com) and Localhost
+const server = http.createServer(handleRequest);
+if (process.env.VERCEL !== "1") {
+  server.listen(PORT, () => {
+    console.log(`AutoClip Pro Server listening on port ${PORT}`);
+  });
+}

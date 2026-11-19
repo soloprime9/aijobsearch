@@ -24,8 +24,9 @@ const MIME_TYPES = {
   ".txt": "text/plain; charset=utf-8",
 };
 
-const server = http.createServer((req, res) => {
-  const reqUrl = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+export function handleRequest(req, res) {
+  const host = req.headers.host || "localhost";
+  const reqUrl = new URL(req.url, `http://${host}`);
   let pathname = decodeURIComponent(reqUrl.pathname);
 
   if (pathname === "/api/health" || pathname === "/healthz") {
@@ -90,10 +91,15 @@ const server = http.createServer((req, res) => {
     });
     fs.createReadStream(filePath).pipe(res);
   }
-});
+}
 
-export default server;
+// Default export for Vercel Serverless Function
+export default handleRequest;
 
-server.listen(PORT, () => {
-  console.log(`AutoClip Pro Server listening on port ${PORT}`);
-});
+// Direct listener for Docker (Render.com) and Localhost
+const server = http.createServer(handleRequest);
+if (process.env.VERCEL !== "1") {
+  server.listen(PORT, () => {
+    console.log(`AutoClip Pro Server listening on port ${PORT}`);
+  });
+}
