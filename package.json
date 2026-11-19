@@ -1,9 +1,22 @@
 {
-  "name": "aijobsearch",
-  "version": "1.0.0",
-  "description": "AutoClip Pro Bundle — Turn Long Videos into Shorts",
+  "name": "ai-job-copilot-production",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "AutoClip Pro Bundle — Turn Long Videos into Shorts | falconspido.com",
+  "main": "web/server.js",
   "scripts": {
     "build": "echo build ok",
-    "start": "node server.js"
-  }
+    "start": "node web/server.js",
+    "dev": "node web/server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "autoclip",
+    "shorts",
+    "reels"
+  ],
+  "author": "SoloPrime",
+  "license": "MIT"
 }
