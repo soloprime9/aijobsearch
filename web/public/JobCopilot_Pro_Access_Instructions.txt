@@ -1,0 +1,43 @@
+=======================================================
+   WELCOME TO JOBCOPILOT PRO — AUTONOMOUS CAREER SUITE
+=======================================================
+
+Thank you for your purchase! Your Pro access is unlocked.
+
+-------------------------------------------------------
+1. CHROME EXTENSION INSTALLATION (Takes 30 Seconds)
+-------------------------------------------------------
+Step 1: Extract the downloaded "ai-job-copilot-extension.zip" folder.
+Step 2: Open Google Chrome and go to: chrome://extensions/
+Step 3: Turn ON "Developer mode" (toggle in top-right corner).
+Step 4: Click "Load unpacked" (top-left) and select the extracted folder.
+Step 5: JobCopilot icon will now appear in your browser toolbar!
+
+-------------------------------------------------------
+2. WEB STUDIO ACCESS & RADAR
+-------------------------------------------------------
+You can also access the full web dashboard directly:
+• Live Web Portal: https://jobcopilot.app (or local URL)
+• Features unlocked:
+  - Multi-portal job scraper (LinkedIn, Indeed, Glassdoor)
+  - ATS Resume Builder & Match Scorer
+  - AI Mock Interview Practice
+  - Application Pipeline Tracker
+
+-------------------------------------------------------
+3. PRO LICENSE KEY ACTIVATION
+-------------------------------------------------------
+Your purchase email is your primary license identifier.
+In the extension or web studio, go to Settings -> "Enter License Key":
+Key format: JCP-PRO-[YOUR-ORDER-ID]
+Support for up to 2 devices simultaneously.
+
+-------------------------------------------------------
+4. DEDICATED SUPPORT
+-------------------------------------------------------
+Need help with setup or questions?
+Contact Admin: pratikkumar5750@gmail.com
+WhatsApp Support: Available in your order receipt.
+
+Enjoy accelerating your career with JobCopilot Pro!
+=======================================================
