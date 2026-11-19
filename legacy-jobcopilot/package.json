@@ -1,0 +1,22 @@
+{
+  "name": "ai-job-copilot-production",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "AI Job Copilot — Autonomous Career Engine, Multi-Portal Search, ATS Resume Tailoring & Device-Locked License Vault",
+  "main": "web/server.js",
+  "scripts": {
+    "start": "node web/server.js",
+    "dev": "node web/server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "ai-job-copilot",
+    "career-engine",
+    "resume-tailoring",
+    "license-vault"
+  ],
+  "author": "SoloPrime",
+  "license": "UNLICENSED"
+}

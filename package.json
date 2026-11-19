@@ -1,22 +1,22 @@
 {
-  "name": "ai-job-copilot-production",
-  "version": "2.0.0",
+  "name": "autoclip-pro-bundle",
+  "version": "1.0.0",
+  "description": "AutoClip Pro Bundle — Turn Long Videos into Shorts | AI Viral Reel Generator",
   "type": "module",
-  "description": "AI Job Copilot — Autonomous Career Engine, Multi-Portal Search, ATS Resume Tailoring & Device-Locked License Vault",
-  "main": "web/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node web/server.js",
-    "dev": "node web/server.js"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "start": "node server.js",
+    "dev": "node server.js",
+    "serve": "node server.js"
   },
   "keywords": [
-    "ai-job-copilot",
-    "career-engine",
-    "resume-tailoring",
-    "license-vault"
+    "autoclip",
+    "video-editing",
+    "shorts",
+    "reels",
+    "ai-video",
+    "landing-page"
   ],
   "author": "SoloPrime",
-  "license": "UNLICENSED"
+  "license": "MIT"
 }
