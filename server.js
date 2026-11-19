@@ -31,8 +31,14 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-  const reqUrl = new URL(req.url, `http://${req.headers.host}`);
+  const reqUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   let pathname = decodeURIComponent(reqUrl.pathname);
+
+  // Healthcheck endpoint for Docker & Render.com
+  if (pathname === "/api/health" || pathname === "/healthz") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ status: "ok", uptime: process.uptime() }));
+  }
 
   if (pathname === "/" || pathname === "") {
     pathname = "/index.html";
@@ -110,7 +116,7 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
   console.log(`\n==================================================`);
   console.log(`⚡ AutoClip Pro Bundle Server is LIVE!`);
-  console.log(`🌐 Local URL:  http://localhost:${PORT}`);
+  console.log(`🌐 Listening on port: ${PORT}`);
   console.log(`🎬 Video streaming: Byte-Range (HTTP 206) Enabled`);
   console.log(`==================================================\n`);
 });
