@@ -1,21 +1,9 @@
 {
-  "name": "autoclip-pro-bundle",
+  "name": "aijobsearch",
   "version": "1.0.0",
-  "description": "AutoClip Pro Bundle — Turn Long Videos into Shorts | AI Viral Reel Generator",
-  "type": "module",
-  "main": "server.js",
+  "description": "AutoClip Pro Bundle — Turn Long Videos into Shorts",
   "scripts": {
-    "build": "echo 'Build successful'",
-    "start": "node server.js",
-    "dev": "node server.js",
-    "serve": "node server.js"
-  },
-  "keywords": [
-    "autoclip",
-    "shorts",
-    "reels",
-    "ai-video"
-  ],
-  "author": "SoloPrime",
-  "license": "MIT"
+    "build": "echo build ok",
+    "start": "node server.js"
+  }
 }
