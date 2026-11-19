@@ -5,17 +5,16 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
+    "build": "echo 'Build successful'",
     "start": "node server.js",
     "dev": "node server.js",
     "serve": "node server.js"
   },
   "keywords": [
     "autoclip",
-    "video-editing",
     "shorts",
     "reels",
-    "ai-video",
-    "landing-page"
+    "ai-video"
   ],
   "author": "SoloPrime",
   "license": "MIT"
