@@ -3,6 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-T46DD54X"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+</script>
 <title>Feed — Latest Photos &amp; Videos | falconspido.com</title>
 <meta name="description" content="Explore the latest photos, short videos, and creator reels on falconspido.com. Newest uploads appear first in a fast, scrollable feed.">
 <meta name="keywords" content="falconspido, falconspido feed, latest photos, short videos, creator reels, trending clips">
@@ -15,14 +21,14 @@
 <meta property="og:url" content="https://www.falconspido.com/feed">
 <meta property="og:title" content="Feed — Latest Photos &amp; Videos | falconspido.com">
 <meta property="og:description" content="Explore the latest photos, short videos, and creator reels on falconspido.com. Newest uploads appear first.">
-<meta property="og:image" id="ogImageMeta" content="">
+<meta property="og:image" id="ogImageMeta" content="https://www.falconspido.com/assets/AutoClip_Topmate_Cover_1280x720.png">
 <meta property="og:image:alt" content="falconspido.com Latest Photos and Videos Feed">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Feed — Latest Photos &amp; Videos | falconspido.com">
 <meta name="twitter:description" content="Explore the latest photos, short videos, and creator reels on falconspido.com.">
-<meta name="twitter:image" id="twImageMeta" content="">
+<meta name="twitter:image" id="twImageMeta" content="https://www.falconspido.com/assets/AutoClip_Topmate_Cover_1280x720.png">
 
 <!-- Structured Data (CollectionPage + WebSite + BreadcrumbList + dynamic ItemList) -->
 <script type="application/ld+json" id="feedSchemaJsonLd">
@@ -641,7 +647,7 @@ footer{border-top:1px solid var(--line);padding:26px 16px;color:var(--mute);font
           description: p.description || name,
           url: postUrl,
           contentUrl: toAbsMedia(p.mediaUrl) || p.mediaUrl,
-          thumbnailUrl: toAbsMedia(p.thumbUrl) || undefined,
+          thumbnailUrl: toAbsMedia(p.thumbUrl) || (API_CONFIG.siteOrigin + "/assets/AutoClip_Topmate_Cover_1280x720.png"),
           uploadDate: p.createdAt,
           interactionStatistic: [
             { "@type": "InteractionCounter", interactionType: "https://schema.org/WatchAction", userInteractionCount: p.views },
