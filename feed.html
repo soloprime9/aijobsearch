@@ -351,16 +351,14 @@ footer{border-top:1px solid var(--line);padding:26px 16px;color:var(--mute);font
   "use strict";
 
   // =========================================================================
-  // VERCEL BACKEND API CONFIG
-  // 1) Replace DUMMY_VERCEL_API (or set BACKEND_API_BASE in Vercel Env) when
-  //    ready, or pass ?api=https://your-vercel-app.vercel.app in the URL.
-  // 2) If server.js SSR injected window.__INITIAL_FEED_POSTS__, initial load
-  //    uses real SSR data instantaneously (zero loading flicker, crawler-ready).
+  // REAL VERCEL BACKEND API CONFIG (No dummy/fake fallback)
+  // Uses same-origin SSR + /api/feed proxy (backed by https://backend-k.vercel.app),
+  // or ?api=https://your-vercel-app.vercel.app override.
   // =========================================================================
-  var DUMMY_VERCEL_API = "https://api-demo.vercel.app";
+  var VERCEL_BACKEND_API = "https://backend-k.vercel.app";
   var API_CONFIG = {
-    baseUrl: DUMMY_VERCEL_API,
-    feedPath: "/post/feed/for-you",
+    baseUrl: VERCEL_BACKEND_API,
+    feedPath: "/fondpeace/feed",
     viewPath: "/post/view/",
     siteOrigin: "https://www.falconspido.com",
     // Strict date floor: 25 Nov 2026 00:00:00 IST onwards (latest uploads always at top)
@@ -370,107 +368,8 @@ footer{border-top:1px solid var(--line);padding:26px 16px;color:var(--mute);font
   var params = new URLSearchParams(window.location.search);
   var queryApi = (params.get("api") || "").trim();
   var API_BASE = (queryApi || (params.get("local") === "1" ? "http://localhost:4000" : API_CONFIG.baseUrl)).replace(/\/+$/, "");
-  var HAS_SSR_POSTS = Array.isArray(window.__INITIAL_FEED_POSTS__) && window.__INITIAL_FEED_POSTS__.length > 0 && !queryApi && params.get("demo") !== "1";
-  var IS_DUMMY_MODE = !HAS_SSR_POSTS && (params.get("demo") === "1" || (!queryApi && params.get("local") !== "1" && API_BASE === DUMMY_VERCEL_API));
+  var HAS_SSR_POSTS = Array.isArray(window.__INITIAL_FEED_POSTS__) && window.__INITIAL_FEED_POSTS__.length > 0 && !queryApi;
   var SHOW_ALL_DATES = params.get("all") === "1";
-
-  var isFileProto = window.location.protocol === "file:";
-  var DEMO_VIDEO_DEBATE = isFileProto
-    ? "https://cdn.jsdelivr.net/gh/soloprime9/aijobsearch@main/videos/ai-labs-debate.mp4"
-    : "/videos/ai-labs-debate.mp4";
-  var DEMO_VIDEO_PODCAST = isFileProto
-    ? "https://cdn.jsdelivr.net/gh/soloprime9/aijobsearch@main/videos/garfield-poehler.mp4"
-    : "/videos/garfield-poehler.mp4";
-
-  function svgPhotoUri(title, sub, c1, c2) {
-    var safeTitle = String(title || "").replace(/[<>&"]/g, "");
-    var safeSub = String(sub || "").replace(/[<>&"]/g, "");
-    var xml = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1000">'
-      + '<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">'
-      + '<stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient></defs>'
-      + '<rect width="900" height="1000" fill="url(#bg)"/>'
-      + '<circle cx="720" cy="180" r="140" fill="#ffc533" opacity=".2"/>'
-      + '<circle cx="160" cy="840" r="200" fill="#ffffff" opacity=".08"/>'
-      + '<rect x="70" y="70" width="210" height="44" rx="22" fill="rgba(255,255,255,.16)"/>'
-      + '<text x="175" y="99" text-anchor="middle" fill="#ffc533" font-family="Arial,sans-serif" font-weight="700" font-size="22">FALCONSPIDO.COM</text>'
-      + '<text x="70" y="500" fill="#ffffff" font-family="Arial,sans-serif" font-weight="800" font-size="56">' + safeTitle + '</text>'
-      + '<text x="70" y="566" fill="rgba(255,255,255,.85)" font-family="Arial,sans-serif" font-weight="500" font-size="30">' + safeSub + '</text>'
-      + '<path d="M70 640 L260 640" stroke="#ffc533" stroke-width="8" stroke-linecap="round"/>'
-      + '</svg>';
-    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml);
-  }
-
-  // Built-in dummy posts (chronologically mixed intentionally to prove newest-first sort + Nov 25 gate)
-  var DEMO_RAW_POSTS = [
-    {
-      _id: "6b0811006d3056642e964010",
-      title: "Creator Workflow Update — Fast Mobile Vertical Previews #falconspido #update #design",
-      description: "Newest photo release showcasing dark/light adaptive media stage and crisp cover rendering.",
-      mediaType: "image/jpeg",
-      media: svgPhotoUri("Creator Workflow", "26 Nov 2026 · Latest Upload #1", "#102a8f", "#2f6bff"),
-      tags: ["falconspido", "update", "design"],
-      location: "New Delhi, India",
-      views: 184,
-      likes: ["u1", "u2", "u3", "u4"],
-      comments: [{ userId: { username: "aarav" }, CommentText: "Super fast loading on mobile!" }],
-      userId: { username: "falconspido", isVerified: true },
-      createdAt: "2026-11-26T12:15:00.000Z"
-    },
-    {
-      _id: "6b073ad96d3056642e963ec8",
-      title: "Evening Celebration Photo Moment #photochallenge #newpost #creator",
-      description: "25 Nov evening upload highlighting portrait framing and instant lightbox preview.",
-      mediaType: "image/jpeg",
-      media: svgPhotoUri("25 Nov Portrait", "25 Nov 2026 · Evening Frame", "#0d2038", "#0b8a5b"),
-      tags: ["photochallenge", "newpost", "creator"],
-      location: "Varanasi, India",
-      views: 92,
-      likes: ["u1", "u2"],
-      comments: [],
-      userId: { username: "tonyreduce", isVerified: true },
-      createdAt: "2026-11-25T19:45:29.384Z"
-    },
-    {
-      _id: "6b07ea206d3056642e963ff1",
-      title: "AI Labs Debate Short Clip — Auto-Framed Subtitles #autoclip #shorts #reels",
-      description: "Vertical short video auto-clipped with speaker tracking and ready-to-post captions.",
-      mediaType: "video/mp4",
-      media: DEMO_VIDEO_DEBATE,
-      thumbnail: svgPhotoUri("AI Labs Debate", "26 Nov 2026 · Short Reel (0:34)", "#0f172a", "#1d4ed8"),
-      duration: 34,
-      tags: ["autoclip", "shorts", "reels"],
-      location: "Mumbai, India",
-      views: 420,
-      likes: ["u1", "u2", "u3", "u4", "u5", "u6"],
-      comments: [{ userId: { username: "meera" }, CommentText: "Clean captions and crop!" }],
-      userId: { username: "autoclip_pro", isVerified: true },
-      createdAt: "2026-11-26T08:30:00.000Z"
-    },
-    {
-      _id: "6b0733386d3056642e963c5f",
-      title: "Podcast Highlights — Full-Screen Vertical Cut #podcast #clips #falconspido",
-      description: "25 Nov video reel with instant scroll autoplay, mute control, and seekable progress bar.",
-      mediaType: "video/mp4",
-      media: DEMO_VIDEO_PODCAST,
-      thumbnail: svgPhotoUri("Podcast Clip", "25 Nov 2026 · Reel Cut (0:28)", "#1e293b", "#7c3aed"),
-      duration: 28,
-      tags: ["podcast", "clips", "falconspido"],
-      location: "Bengaluru, India",
-      views: 315,
-      likes: ["u1", "u2", "u3"],
-      comments: [],
-      userId: { username: "tonyreduce", isVerified: true },
-      createdAt: "2026-11-25T14:10:00.000Z"
-    },
-    {
-      _id: "6b0100006d3056642e963001",
-      title: "Older Archive Post (Before 25 Nov Cutoff — Should Stay Hidden)",
-      mediaType: "image/jpeg",
-      media: svgPhotoUri("Archived Post", "20 Nov 2026", "#334155", "#64748b"),
-      userId: { username: "archive" },
-      createdAt: "2026-11-20T10:00:00.000Z"
-    }
-  ];
 
   var state = {
     allPosts: [],
@@ -483,7 +382,7 @@ footer{border-top:1px solid var(--line);padding:26px 16px;color:var(--mute);font
     expandedIds: new Set(),
     loading: false,
     error: "",
-    sourceMode: HAS_SSR_POSTS ? "ssr" : (IS_DUMMY_MODE ? "dummy" : "live")
+    sourceMode: HAS_SSR_POSTS ? "ssr" : "live"
   };
 
   var feedContainer = document.getElementById("feedContainer");
@@ -590,7 +489,12 @@ footer{border-top:1px solid var(--line);padding:26px 16px;color:var(--mute);font
   }
 
   function getPostUrl(post) {
-    return API_CONFIG.siteOrigin + "/feed#post-" + encodeURIComponent(post.id);
+    return API_CONFIG.siteOrigin + "/post/" + encodeURIComponent(post.id);
+  }
+
+  function getPostHref(post) {
+    var qs = queryApi ? ("?api=" + encodeURIComponent(queryApi)) : "";
+    return "/post/" + encodeURIComponent(post.id) + qs;
   }
 
   function formatDuration(sec) {
@@ -759,24 +663,18 @@ footer{border-top:1px solid var(--line);padding:26px 16px;color:var(--mute);font
 
     try {
       // Check same-origin server proxy first if running inside aijobsearch server without ?api=
-      if (!queryApi && params.get("local") !== "1" && params.get("demo") !== "1" && !isFileProto) {
+      if (!queryApi && params.get("local") !== "1" && window.location.protocol !== "file:") {
         try {
           var proxyRes = await fetch("/api/feed", { cache: "no-store" });
           if (proxyRes.ok) {
             var proxyData = await proxyRes.json();
-            if (proxyData.mode === "live" && Array.isArray(proxyData.posts) && proxyData.posts.length) {
+            if (proxyData.mode === "live" && Array.isArray(proxyData.posts)) {
               state.sourceMode = "live";
               state.allPosts = normalizeAndSortPosts(proxyData.posts);
               return;
             }
           }
         } catch (_) {}
-      }
-
-      if (IS_DUMMY_MODE) {
-        state.sourceMode = "dummy";
-        state.allPosts = normalizeAndSortPosts(DEMO_RAW_POSTS);
-        return;
       }
 
       state.sourceMode = "live";
@@ -786,7 +684,7 @@ footer{border-top:1px solid var(--line);padding:26px 16px;color:var(--mute);font
       var MAX_PAGES = 20;
 
       while (keepGoing && page <= MAX_PAGES) {
-        var url = API_BASE + API_CONFIG.feedPath + "?page=" + page + "&limit=50";
+        var url = API_BASE + API_CONFIG.feedPath + "?page=" + page + "&limit=50&sort=latest";
         var res = await fetch(url, { cache: "no-store" });
         if (!res.ok) {
           var snippet = "";
@@ -821,7 +719,7 @@ footer{border-top:1px solid var(--line);padding:26px 16px;color:var(--mute);font
     } catch (err) {
       var rawMsg = (err && err.message) ? err.message : "Unable to load feed";
       if (/failed to fetch|networkerror|load failed/i.test(rawMsg) && API_BASE.indexOf("vercel.app") !== -1) {
-        state.error = "Vercel backend (" + API_BASE + ") failed to respond with CORS/200. Check your Vercel deployment or pass ?demo=1 / ?api=...";
+        state.error = "Vercel backend (" + API_BASE + ") failed to respond cleanly. Retry or check ?api=...";
       } else {
         state.error = rawMsg;
       }
@@ -937,13 +835,11 @@ footer{border-top:1px solid var(--line);padding:26px 16px;color:var(--mute);font
 
     if (statusDot) {
       statusDot.classList.toggle("is-err", Boolean(state.error));
-      statusDot.classList.toggle("is-demo", !state.error && state.sourceMode === "dummy");
+      statusDot.classList.remove("is-demo");
     }
 
     if (state.error) {
       statusText.textContent = "Vercel API error";
-    } else if (state.sourceMode === "dummy") {
-      statusText.textContent = visible.length + " " + (visible.length === 1 ? "post" : "posts") + " · Latest first · Dummy API";
     } else {
       statusText.textContent = visible.length + " " + (visible.length === 1 ? "post" : "posts") + " · Latest first · Vercel";
     }
@@ -1179,7 +1075,7 @@ footer{border-top:1px solid var(--line);padding:26px 16px;color:var(--mute);font
     sub.appendChild(document.createTextNode(" · "));
     var pLink = document.createElement("a");
     pLink.className = "post-link";
-    pLink.href = getPostUrl(post);
+    pLink.href = getPostHref(post);
     pLink.rel = "bookmark";
     pLink.textContent = "Open ↗";
     sub.appendChild(pLink);
@@ -1440,7 +1336,7 @@ footer{border-top:1px solid var(--line);padding:26px 16px;color:var(--mute);font
 
     var foot = document.createElement("a");
     foot.className = "tile-foot";
-    foot.href = getPostUrl(post);
+    foot.href = getPostHref(post);
     foot.rel = "bookmark";
     var t = document.createElement("span");
     t.className = "tile-title";
@@ -1477,7 +1373,7 @@ footer{border-top:1px solid var(--line);padding:26px 16px;color:var(--mute);font
         var postId = entry.target.getAttribute("data-post-id");
         if (!postId || state.viewedIds.has(postId)) return;
         state.viewedIds.add(postId);
-        if (state.sourceMode === "live" && API_BASE !== DUMMY_VERCEL_API) {
+        if (state.sourceMode === "live" && API_BASE) {
           fetch(API_BASE + API_CONFIG.viewPath + encodeURIComponent(postId), { method: "POST" }).catch(function () {});
         }
       });
